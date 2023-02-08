@@ -6,6 +6,8 @@ public class Manager : MonoBehaviour
 {
 
     int cacheSize = 8;
+    float maxTimeBetweenTaps = 1.2f;
+    float timeSinceLAstTap = 0f;
     List<GameObject> locations;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
@@ -22,8 +24,12 @@ public class Manager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        timeSinceLAstTap += Time.deltaTime;
+
         if (Input.GetButtonDown("Fire1"))
         {
+            timeSinceLAstTap = 0f;
+
             if (locations.Count == cacheSize)
             {
                 GameObject.Destroy(locations[0]);
@@ -37,8 +43,25 @@ public class Manager : MonoBehaviour
             GameObject newLocation = Instantiate(locationPrefab, destination, Quaternion.identity);
             locations.Add(newLocation);
 
-            mean.transform.position = GetMean();
+            if (locations.Count > 2)
+            {
+                mean.GetComponent<SpriteRenderer>().color = Color.red;
+                mean.transform.position = GetMean();
+            }
+            else
+            {
+                mean.GetComponent<SpriteRenderer>().color = Color.clear;
+            }
+        }
 
+        if (timeSinceLAstTap >= maxTimeBetweenTaps)
+        {
+            foreach (GameObject g in locations) {
+                GameObject.Destroy(g);
+            }
+
+            mean.GetComponent<SpriteRenderer>().color = Color.clear;
+            locations.Clear();
         }
     }
 
@@ -55,4 +78,5 @@ public class Manager : MonoBehaviour
 
         return new Vector2(x / locations.Count, y / locations.Count);
     }
+
 }
