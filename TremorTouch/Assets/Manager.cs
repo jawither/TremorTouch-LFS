@@ -10,13 +10,13 @@ public class Manager : MonoBehaviour
 
     // Tunable parameters
     static int cacheSize = 8;
-    static int minTaps = 2;
+    static int minTaps = 3;
     static float maxTimeBetweenTaps = 0.8f;
 
 
     // Manager vars
     float timeSinceLastTap = 0f;
-    List<GameObject> locations;
+    List<GameObject> cache;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
     GameObject mean;
@@ -25,17 +25,30 @@ public class Manager : MonoBehaviour
     GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
     EventSystem m_EventSystem;
+    GameObject canvas;
 
 
     // Start: Called before the first frame update by Unity.
     void Start()
     {
-        locations = new List<GameObject>(cacheSize);
-        mean = GameObject.Instantiate(meanPrefab, transform.position, Quaternion.identity);
+        Assert.IsTrue(minTaps >= 1);
+
+        canvas = GameObject.Find("Canvas");
+        cache = new List<GameObject>(cacheSize);
         waiting = new Color(255f, 0f, 0f, 0.5f);
-        m_Raycaster = GameObject.Find("Canvas").GetComponent<GraphicRaycaster>();
-        m_EventSystem = GameObject.Find("Canvas").GetComponent<EventSystem>();
+
+        m_Raycaster = canvas.GetComponent<GraphicRaycaster>();
+        m_EventSystem = canvas.GetComponent<EventSystem>();
+
+        mean = GameObject.Instantiate(meanPrefab, transform.position,
+            Quaternion.identity, canvas.transform);
+        
+        mean.GetComponent<Canvas>().overrideSorting = true;
+        mean.GetComponent<Canvas>().sortingOrder = 5;
+
+        Reset();
     }
+
 
     // Update: Called once per frame by Unity.
     void Update()
@@ -44,21 +57,21 @@ public class Manager : MonoBehaviour
         if (Input.GetButtonDown("Fire1")) ReceiveUserTap();
 
         // Exit if cache is empty
-        if (locations.Count == 0) return;
+        if (cache.Count == 0) return;
 
         // Exit if clock hasn't yet expired
         timeSinceLastTap += Time.deltaTime;
         if (timeSinceLastTap < maxTimeBetweenTaps) return;
 
         // Reset if clock expired but not enough taps
-        if (locations.Count < minTaps)
+        if (cache.Count < minTaps)
         {
             Reset();
             return;
         }
 
         // Issue tap if clock expired and enough taps
-        if (locations.Count <= cacheSize)
+        if (cache.Count <= cacheSize)
         {
             IssueTapToSystem();
             return;
@@ -78,29 +91,26 @@ public class Manager : MonoBehaviour
         timeSinceLastTap = 0f;
 
         // If cache at capcity, remove oldest tap
-        if (locations.Count == cacheSize)
+        if (cache.Count == cacheSize)
         {
-            GameObject.Destroy(locations[0]);
-            locations.RemoveAt(0);
+            GameObject.Destroy(cache[0]);
+            cache.RemoveAt(0);
         }
 
-        // Get screen tap location coordinates
-        Vector3 destination = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        destination.z = Camera.main.nearClipPlane;
-        transform.position = destination;
-
-        // Create new tap location at coordinates
-        GameObject newLocation = Instantiate(locationPrefab, destination, Quaternion.identity);
-        locations.Add(newLocation);
+        // Create new tap location at mouse
+        Vector3 destination = Input.mousePosition;
+        GameObject newLocation = Instantiate(locationPrefab, destination,
+            Quaternion.identity, canvas.transform);
+        cache.Add(newLocation);
 
         // Make mean location visible and update its location iff new tap count > minTaps
-        if (locations.Count < minTaps)
+        if (cache.Count < minTaps)
         {
-            mean.GetComponent<SpriteRenderer>().color = Color.clear;
+            SetMeanColor(Color.clear);
         }
         else
         {
-            mean.GetComponent<SpriteRenderer>().color = waiting;
+            SetMeanColor(waiting);
             mean.transform.position = GetMeanPosition();
         }
     }
@@ -114,13 +124,13 @@ public class Manager : MonoBehaviour
         float x = 0;
         float y = 0;
 
-        foreach (GameObject location in locations)
+        foreach (GameObject location in cache)
         {
             x += location.transform.position.x;
             y += location.transform.position.y;
         }
 
-        return new Vector2(x / locations.Count, y / locations.Count);
+        return new Vector2(x / cache.Count, y / cache.Count);
     }
 
 
@@ -128,35 +138,31 @@ public class Manager : MonoBehaviour
 
     void Reset()
     {
-        mean.GetComponent<SpriteRenderer>().color = Color.clear;
+        SetMeanColor(Color.clear);
         ClearCache();
     }
 
 
-    // TODO
     // IssueTapToSystem: Activate UI elements at the location of the mean.
 
     void IssueTapToSystem()
     {
+
+        // Get list of all UI elements at mean's location
         m_PointerEventData = new PointerEventData(m_EventSystem);
-        m_PointerEventData.position = mean.gameObject.transform.position;
+        m_PointerEventData.position = mean.transform.position;
         List<RaycastResult> results = new List<RaycastResult>();
         m_Raycaster.Raycast(m_PointerEventData, results);
+
+        // Issue a click to each of those UI elements
         foreach (RaycastResult result in results)
         {
-            if (result.gameObject.GetComponent<Button>() == null)
-            {
-                continue;
-            }
-
-            print(result.gameObject.name);
-            GameObject button = result.gameObject;
-            ExecuteEvents.Execute(button, m_PointerEventData, ExecuteEvents.pointerEnterHandler);
-            ExecuteEvents.Execute(button, m_PointerEventData, ExecuteEvents.submitHandler);
+            ExecuteEvents.Execute(result.gameObject,
+                new BaseEventData(EventSystem.current), ExecuteEvents.submitHandler);
         }
 
-
-        mean.GetComponent<SpriteRenderer>().color = Color.red;
+        // Make mean red and empty cache
+        SetMeanColor(Color.red);
         ClearCache();
     }
 
@@ -165,14 +171,20 @@ public class Manager : MonoBehaviour
 
     void ClearCache()
     {
-        foreach (GameObject g in locations)
+        foreach (GameObject g in cache)
         {
             GameObject.Destroy(g);
         }
 
-        locations.Clear();
+        cache.Clear();
     }
 
 
+    // SetMeanColor: Sets mean to a color.
+
+    void SetMeanColor(Color color)
+    {
+        mean.GetComponent<Image>().color = color;
+    }
 
 }
