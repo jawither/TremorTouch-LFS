@@ -42,7 +42,7 @@ public class Manager : MonoBehaviour
         mean = GameObject.Instantiate(meanPrefab, transform.position, Quaternion.identity);
         waiting = new Color(255f, 0f, 0f, 0.5f);
 
-        // settingsToggle = GetComponent<Toggle>();
+
         settingsToggle.onValueChanged.AddListener( delegate {ToggleValueChanged();});
 
         cacheSizeSlider.value = cacheSize;
@@ -50,18 +50,15 @@ public class Manager : MonoBehaviour
         cacheSizeSlider.onValueChanged.AddListener( delegate {UpdateCacheSize();});
         cacheSizeSlider.gameObject.SetActive(false);
 
-
         minTapsSlider.value = minTaps;
         minTapsSlider.minValue = 0.5f;
         minTapsSlider.onValueChanged.AddListener( delegate {UpdateMinTaps();});
         minTapsSlider.gameObject.SetActive(false);
 
-
         maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
         maxTimeBetweenTapsSlider.minValue = 0.5f;
         maxTimeBetweenTapsSlider.onValueChanged.AddListener( delegate {UpdateMaxTimeBetweenTaps();});
         maxTimeBetweenTapsSlider.gameObject.SetActive(false);
-
 
     }
 
@@ -183,6 +180,9 @@ public class Manager : MonoBehaviour
         locations.Clear();
     }
 
+
+    // UI toggle that sets visibility for sliders on and off.
+
     void ToggleValueChanged() {
         if (visible == false)
         {
@@ -200,11 +200,17 @@ public class Manager : MonoBehaviour
 
     }
 
+
+    // UI slider for changing cache size
+
     void UpdateCacheSize()
     {
         cacheSize = Mathf.RoundToInt(cacheSizeSlider.value * 8);
         print(cacheSize);
     }
+
+
+    // UI slider for changing minimum number of taps
 
     void UpdateMinTaps()
     {
@@ -212,26 +218,13 @@ public class Manager : MonoBehaviour
         print(minTaps);
     }
 
+
+    // UI slider for changing max time between taps
+
     void UpdateMaxTimeBetweenTaps()
     {
         maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 0.8f;
         print(maxTimeBetweenTaps);
     }
-
-//     GameObject FindInActiveObjectByName(string name)
-// {
-//     Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
-//     for (int i = 0; i < objs.Length; i++)
-//     {
-//         if (objs[i].hideFlags == HideFlags.None)
-//         {
-//             if (objs[i].name == name)
-//             {
-//                 return objs[i].gameObject;
-//             }
-//         }
-//     }
-//     return null;
-// }
 
 }
