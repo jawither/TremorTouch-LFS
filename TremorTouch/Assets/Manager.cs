@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
@@ -10,6 +11,18 @@ public class Manager : MonoBehaviour
     static int cacheSize = 8;
     static int minTaps = 2;
     static float maxTimeBetweenTaps = 0.8f;
+
+
+
+    // public Toggle settingsToggle;
+    public Slider cacheSizeSlider;
+    public Slider minTapsSlider;
+    public Slider maxTimeBetweenTapsSlider;
+
+    // static int minTapsForHold = 10;
+    // static int minTapsForSwipe = 10;
+
+    // For hold/swipe, numberOfTaps has to be greater than a threshold, should that threshold be less than the cache size?
 
 
     // Manager vars
@@ -27,6 +40,24 @@ public class Manager : MonoBehaviour
         locations = new List<GameObject>(cacheSize);
         mean = GameObject.Instantiate(meanPrefab, transform.position, Quaternion.identity);
         waiting = new Color(255f, 0f, 0f, 0.5f);
+
+        // settingsToggle = GetComponent<Toggle>();
+        // settingsToggle.onValueChanged.AddListener( delegate {ToggleValueChanged(slider1);});
+
+        cacheSizeSlider.value = cacheSize;
+        cacheSizeSlider.minValue = 0.2f;
+        cacheSizeSlider.onValueChanged.AddListener( delegate {UpdateCacheSize();});
+
+        minTapsSlider.value = minTaps;
+        minTapsSlider.minValue = 0.5f;
+        minTapsSlider.onValueChanged.AddListener( delegate {UpdateMinTaps();});
+
+
+        maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
+        maxTimeBetweenTapsSlider.minValue = 0.5f;
+        maxTimeBetweenTapsSlider.onValueChanged.AddListener( delegate {UpdateMaxTimeBetweenTaps();});
+
+
     }
 
     // Update: Called once per frame by Unity.
@@ -69,7 +100,7 @@ public class Manager : MonoBehaviour
         // Reset clock
         timeSinceLastTap = 0f;
 
-        // If cache at capcity, remove oldest tap
+        // If cache at capacity, remove oldest tap
         if (locations.Count == cacheSize)
         {
             GameObject.Destroy(locations[0]);
@@ -146,5 +177,43 @@ public class Manager : MonoBehaviour
 
         locations.Clear();
     }
+
+    // void ToggleValueChanged(GameObject slider1) {
+    //     slider1.SetActive(true);
+    // }
+
+    void UpdateCacheSize()
+    {
+        cacheSize = Mathf.RoundToInt(cacheSizeSlider.value * 8);
+        print(cacheSize);
+    }
+
+    void UpdateMinTaps()
+    {
+        minTaps = Mathf.CeilToInt(minTapsSlider.value * 2);
+        print(minTaps);
+    }
+
+    void UpdateMaxTimeBetweenTaps()
+    {
+        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 0.8f;
+        print(maxTimeBetweenTaps);
+    }
+
+//     GameObject FindInActiveObjectByName(string name)
+// {
+//     Transform[] objs = Resources.FindObjectsOfTypeAll<Transform>() as Transform[];
+//     for (int i = 0; i < objs.Length; i++)
+//     {
+//         if (objs[i].hideFlags == HideFlags.None)
+//         {
+//             if (objs[i].name == name)
+//             {
+//                 return objs[i].gameObject;
+//             }
+//         }
+//     }
+//     return null;
+// }
 
 }
