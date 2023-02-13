@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
@@ -20,6 +22,10 @@ public class Manager : MonoBehaviour
     GameObject mean;
     Color waiting;
 
+    GraphicRaycaster m_Raycaster;
+    PointerEventData m_PointerEventData;
+    EventSystem m_EventSystem;
+
 
     // Start: Called before the first frame update by Unity.
     void Start()
@@ -27,6 +33,8 @@ public class Manager : MonoBehaviour
         locations = new List<GameObject>(cacheSize);
         mean = GameObject.Instantiate(meanPrefab, transform.position, Quaternion.identity);
         waiting = new Color(255f, 0f, 0f, 0.5f);
+        m_Raycaster = GameObject.Find("Canvas").GetComponent<GraphicRaycaster>();
+        m_EventSystem = GameObject.Find("Canvas").GetComponent<EventSystem>();
     }
 
     // Update: Called once per frame by Unity.
@@ -130,6 +138,24 @@ public class Manager : MonoBehaviour
 
     void IssueTapToSystem()
     {
+        m_PointerEventData = new PointerEventData(m_EventSystem);
+        m_PointerEventData.position = mean.gameObject.transform.position;
+        List<RaycastResult> results = new List<RaycastResult>();
+        m_Raycaster.Raycast(m_PointerEventData, results);
+        foreach (RaycastResult result in results)
+        {
+            if (result.gameObject.GetComponent<Button>() == null)
+            {
+                continue;
+            }
+
+            print(result.gameObject.name);
+            GameObject button = result.gameObject;
+            ExecuteEvents.Execute(button, m_PointerEventData, ExecuteEvents.pointerEnterHandler);
+            ExecuteEvents.Execute(button, m_PointerEventData, ExecuteEvents.submitHandler);
+        }
+
+
         mean.GetComponent<SpriteRenderer>().color = Color.red;
         ClearCache();
     }
@@ -146,5 +172,7 @@ public class Manager : MonoBehaviour
 
         locations.Clear();
     }
+
+
 
 }
