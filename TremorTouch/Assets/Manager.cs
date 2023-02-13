@@ -14,10 +14,11 @@ public class Manager : MonoBehaviour
 
 
 
-    // public Toggle settingsToggle;
+    public Toggle settingsToggle;
     public Slider cacheSizeSlider;
     public Slider minTapsSlider;
     public Slider maxTimeBetweenTapsSlider;
+    bool visible = false;
 
     // static int minTapsForHold = 10;
     // static int minTapsForSwipe = 10;
@@ -42,20 +43,24 @@ public class Manager : MonoBehaviour
         waiting = new Color(255f, 0f, 0f, 0.5f);
 
         // settingsToggle = GetComponent<Toggle>();
-        // settingsToggle.onValueChanged.AddListener( delegate {ToggleValueChanged(slider1);});
+        settingsToggle.onValueChanged.AddListener( delegate {ToggleValueChanged();});
 
         cacheSizeSlider.value = cacheSize;
         cacheSizeSlider.minValue = 0.2f;
         cacheSizeSlider.onValueChanged.AddListener( delegate {UpdateCacheSize();});
+        cacheSizeSlider.gameObject.SetActive(false);
+
 
         minTapsSlider.value = minTaps;
         minTapsSlider.minValue = 0.5f;
         minTapsSlider.onValueChanged.AddListener( delegate {UpdateMinTaps();});
+        minTapsSlider.gameObject.SetActive(false);
 
 
         maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
         maxTimeBetweenTapsSlider.minValue = 0.5f;
         maxTimeBetweenTapsSlider.onValueChanged.AddListener( delegate {UpdateMaxTimeBetweenTaps();});
+        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
 
 
     }
@@ -178,9 +183,22 @@ public class Manager : MonoBehaviour
         locations.Clear();
     }
 
-    // void ToggleValueChanged(GameObject slider1) {
-    //     slider1.SetActive(true);
-    // }
+    void ToggleValueChanged() {
+        if (visible == false)
+        {
+        cacheSizeSlider.gameObject.SetActive(true);
+        minTapsSlider.gameObject.SetActive(true);
+        maxTimeBetweenTapsSlider.gameObject.SetActive(true);
+        visible = true;
+        }
+        else {
+        cacheSizeSlider.gameObject.SetActive(false);
+        minTapsSlider.gameObject.SetActive(false);
+        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+        visible = false;
+        }
+
+    }
 
     void UpdateCacheSize()
     {
