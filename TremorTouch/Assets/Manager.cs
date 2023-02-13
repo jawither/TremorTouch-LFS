@@ -14,7 +14,7 @@ public class Manager : MonoBehaviour
 
     // Manager vars
     float timeSinceLastTap = 0f;
-    List<GameObject> locations;
+    public List<GameObject> locations;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
     GameObject mean;
@@ -55,6 +55,7 @@ public class Manager : MonoBehaviour
             IssueTapToSystem();
             return;
         }
+
 
         // We should never get here
         Assert.IsTrue(false);
@@ -106,10 +107,17 @@ public class Manager : MonoBehaviour
         float x = 0;
         float y = 0;
 
+        bool usingWeightedMode = true;
+        float weight = 0.1f;
+        float weightMultiplier = - locations.Count / 2;
+
         foreach (GameObject location in locations)
         {
-            x += location.transform.position.x;
-            y += location.transform.position.y;
+            x += location.transform.position.x * (usingWeightedMode ? (1 + weight * weightMultiplier) : 1);
+            y += location.transform.position.y * (usingWeightedMode ? (1 + weight * weightMultiplier) : 1);
+            
+            if(locations.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
+            weightMultiplier += 1;
         }
 
         return new Vector2(x / locations.Count, y / locations.Count);
@@ -131,6 +139,7 @@ public class Manager : MonoBehaviour
     void IssueTapToSystem()
     {
         mean.GetComponent<SpriteRenderer>().color = Color.red;
+        
         ClearCache();
     }
 
@@ -146,5 +155,7 @@ public class Manager : MonoBehaviour
 
         locations.Clear();
     }
+
+
 
 }
