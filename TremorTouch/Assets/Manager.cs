@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class Manager : MonoBehaviour
 {
@@ -31,20 +32,15 @@ public class Manager : MonoBehaviour
     // Update: Called once per frame by Unity.
     void Update()
     {
-        // Update clock
-        timeSinceLastTap += Time.deltaTime;
-
         // Receive user input
-        if (Input.GetButtonDown("Fire1"))
-        {
-            ReceiveUserTap();
-        }
+        if (Input.GetButtonDown("Fire1")) ReceiveUserTap();
+
+        // Exit if cache is empty
+        if (locations.Count == 0) return;
 
         // Exit if clock hasn't yet expired
-        if (timeSinceLastTap < maxTimeBetweenTaps)
-        {
-            return;
-        }
+        timeSinceLastTap += Time.deltaTime;
+        if (timeSinceLastTap < maxTimeBetweenTaps) return;
 
         // Reset if clock expired but not enough taps
         if (locations.Count < minTaps)
@@ -54,14 +50,14 @@ public class Manager : MonoBehaviour
         }
 
         // Issue tap if clock expired and enough taps
-        if (locations.Count < cacheSize)
+        if (locations.Count <= cacheSize)
         {
             IssueTapToSystem();
             return;
         }
 
-        print("Should not see this atm");
-        Reset();
+        // We should never get here
+        Assert.IsTrue(false);
     }
 
 
