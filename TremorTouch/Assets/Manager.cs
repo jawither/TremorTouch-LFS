@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.UI;
 
 public class Manager : MonoBehaviour
 {
@@ -17,6 +18,7 @@ public class Manager : MonoBehaviour
     List<GameObject> locations;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
+    public GameObject canvas;
     GameObject mean;
     Color waiting;
 
@@ -52,7 +54,8 @@ public class Manager : MonoBehaviour
         // Issue tap if clock expired and enough taps
         if (locations.Count <= cacheSize)
         {
-            IssueTapToSystem();
+            Vector3 destination = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            IssueTapToSystem(destination.x, destination.y);
             return;
         }
 
@@ -128,10 +131,29 @@ public class Manager : MonoBehaviour
     // TODO
     // IssueTapToSystem: Activate UI elements at the location of the mean.
 
-    void IssueTapToSystem()
+    void IssueTapToSystem(float x, float y)
     {
+        //Get a list of UIs
+        GameObject[] UIElements = GameObject.FindGameObjectsWithTag("UI");
+        foreach (GameObject obj in UIElements)
+        {
+            var objSelectable = obj.GetComponent<Selectable>();
+            objSelectable.interactable = true;
+
+            obj.GetComponent<UI>().ProcessClick(x, y);
+
+            //objSelectable.interactable = false;
+        }
+
         mean.GetComponent<SpriteRenderer>().color = Color.red;
         ClearCache();
+
+    }
+
+    void ToggleUI(bool setting)
+    {
+
+
     }
 
 
