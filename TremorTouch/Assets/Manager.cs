@@ -11,6 +11,10 @@ public class Manager : MonoBehaviour
     static int minTaps = 2;
     static float maxTimeBetweenTaps = 0.8f;
 
+    //Option flags
+    bool colorTapsOnRecencyFlag = true;
+    bool weightedModeFlag = true;
+
 
     // Manager vars
     float timeSinceLastTap = 0f;
@@ -84,6 +88,7 @@ public class Manager : MonoBehaviour
 
         // Create new tap location at coordinates
         GameObject newLocation = Instantiate(locationPrefab, destination, Quaternion.identity);
+    
         locations.Add(newLocation);
 
         // Make mean location visible and update its location iff new tap count > minTaps
@@ -94,10 +99,10 @@ public class Manager : MonoBehaviour
         else
         {
             mean.GetComponent<SpriteRenderer>().color = waiting;
+            if(colorTapsOnRecencyFlag) ColorTapsOnRecency();
             mean.transform.position = GetMeanPosition();
         }
     }
-
 
     // GetMeanPosition: Returns 2d coordinates that is the mean of all positions
     // of taps in the cache.
@@ -107,14 +112,13 @@ public class Manager : MonoBehaviour
         float x = 0;
         float y = 0;
 
-        bool usingWeightedMode = true;
         float weight = 0.1f;
         float weightMultiplier = - locations.Count / 2;
 
         foreach (GameObject location in locations)
         {
-            x += location.transform.position.x * (usingWeightedMode ? (1 + weight * weightMultiplier) : 1);
-            y += location.transform.position.y * (usingWeightedMode ? (1 + weight * weightMultiplier) : 1);
+            x += location.transform.position.x * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
+            y += location.transform.position.y * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
             
             if(locations.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
             weightMultiplier += 1;
@@ -154,6 +158,16 @@ public class Manager : MonoBehaviour
         }
 
         locations.Clear();
+    }
+
+    void ColorTapsOnRecency()
+    {
+        float weight = 1f / (cacheSize * 2);
+        for(var i = locations.Count - 1; i >= 0; i--)
+        {
+            var val = 1 - weight * (locations.Count - i);
+            locations[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, val);
+        }
     }
 
 
