@@ -21,6 +21,9 @@ public class Manager : MonoBehaviour
     static int minTaps = 3;
     static float maxTimeBetweenTaps = 0.8f;
 
+    //Option flags
+    bool colorTapsOnRecencyFlag = true;
+    bool weightedModeFlag = true;
 
     // Manager vars
     float timeSinceLastTap = 0f;
@@ -179,18 +182,18 @@ public class Manager : MonoBehaviour
         float y = 0;
 
         float weight = 0.1f;
-        float weightMultiplier = - locations.Count / 2;
+        float weightMultiplier = - cache.Count / 2;
 
-        foreach (GameObject location in locations)
+        foreach (GameObject location in cache)
         {
             x += location.transform.position.x * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
             y += location.transform.position.y * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
             
-            if(locations.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
+            if(cache.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
             weightMultiplier += 1;
         }
 
-        return new Vector2(x / locations.Count, y / locations.Count);
+        return new Vector2(x / cache.Count, y / cache.Count);
     }
 
 
