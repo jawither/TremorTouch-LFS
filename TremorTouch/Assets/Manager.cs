@@ -228,14 +228,14 @@ public class Manager : MonoBehaviour
     }
 
     // ColorTapsOnRecency: Makes more recent taps have higher opacity 
-    
+
     void ColorTapsOnRecency()
     {
         float weight = 1f / (cacheSize * 2);
-        for(var i = locations.Count - 1; i >= 0; i--)
+        for(var i = cache.Count - 1; i >= 0; i--)
         {
-            var val = 1 - weight * (locations.Count - i);
-            locations[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, val);
+            var val = 1 - weight * (cache.Count - i);
+            cache[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, val);
         }
     }
 
