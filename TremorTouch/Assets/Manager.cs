@@ -16,6 +16,16 @@ public class Manager : MonoBehaviour
         Weighted
     }
 
+    // Settings variables to change from within app
+    Algorithm alg;
+
+    public Toggle AlgorithmToggle;
+    public Toggle settingsToggle;
+    public Slider cacheSizeSlider;
+    public Slider minTapsSlider;
+    public Slider maxTimeBetweenTapsSlider;
+    bool visible = false;
+
     // Tunable parameters
     static int cacheSize = 8;
     static int minTaps = 3;
@@ -53,9 +63,11 @@ public class Manager : MonoBehaviour
 
         mean = GameObject.Instantiate(meanPrefab, transform.position,
             Quaternion.identity, canvas.transform);
-        
+
         mean.GetComponent<Canvas>().overrideSorting = true;
         mean.GetComponent<Canvas>().sortingOrder = 5;
+
+        Settings();
 
         Reset();
     }
@@ -65,7 +77,7 @@ public class Manager : MonoBehaviour
     void Update()
     {
         // Receive user input
-        if (Input.GetButtonDown("Fire1")) ReceiveUserTap(Algorithm.Weighted);
+        if (Input.GetButtonDown("Fire1")) ReceiveUserTap();
 
         // Exit if cache is empty
         if (cache.Count == 0) return;
@@ -96,7 +108,7 @@ public class Manager : MonoBehaviour
     // ReceiveUserTap: called on frame that user taps the screen.
     // Updates Manager metadata.
 
-    void ReceiveUserTap(Algorithm alg)
+    void ReceiveUserTap()
     {
         // Reset clock
         timeSinceLastTap = 0f;
@@ -189,7 +201,7 @@ public class Manager : MonoBehaviour
         {
             x += location.transform.position.x * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
             y += location.transform.position.y * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
-            
+
             if(cache.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
             weightMultiplier += 1;
         }
@@ -251,7 +263,7 @@ public class Manager : MonoBehaviour
         mean.GetComponent<Image>().color = color;
     }
 
-    // ColorTapsOnRecency: Makes more recent taps have higher opacity 
+    // ColorTapsOnRecency: Makes more recent taps have higher opacity
 
     void ColorTapsOnRecency()
     {
@@ -263,4 +275,83 @@ public class Manager : MonoBehaviour
         }
     }
 
+    // UI toggle for changing algorithm from base to weighted
+
+    void AlgorithmValueChanged()
+    {
+        if (alg == Algorithm.Base) {
+            alg = Algorithm.Weighted;
+        }
+        else if (alg == Algorithm.Weighted) {
+            alg = Algorithm.Base;
+        }
+    }
+
+
+    // UI toggle that sets visibility for sliders on and off.
+
+    void SettingValueChanged() {
+        if (visible == false)
+        {
+        cacheSizeSlider.gameObject.SetActive(true);
+        minTapsSlider.gameObject.SetActive(true);
+        maxTimeBetweenTapsSlider.gameObject.SetActive(true);
+        visible = true;
+        }
+        else {
+        cacheSizeSlider.gameObject.SetActive(false);
+        minTapsSlider.gameObject.SetActive(false);
+        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+        visible = false;
+        }
+
+    }
+
+
+    // UI slider for changing cache size
+
+    void UpdateCacheSize()
+    {
+        cacheSize = Mathf.RoundToInt(cacheSizeSlider.value * 8);
+        print(cacheSize);
+    }
+
+
+    // UI slider for changing minimum number of taps
+
+    void UpdateMinTaps()
+    {
+        minTaps = Mathf.CeilToInt(minTapsSlider.value * 2);
+        print(minTaps);
+    }
+
+
+    // UI slider for changing max time between taps
+
+    void UpdateMaxTimeBetweenTaps()
+    {
+        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 0.8f;
+        print(maxTimeBetweenTaps);
+    }
+
+    void Settings()
+    {
+        AlgorithmToggle.onValueChanged.AddListener( delegate {AlgorithmValueChanged();});
+        settingsToggle.onValueChanged.AddListener( delegate {SettingValueChanged();});
+
+        cacheSizeSlider.value = cacheSize;
+        cacheSizeSlider.minValue = 0.2f;
+        cacheSizeSlider.onValueChanged.AddListener( delegate {UpdateCacheSize();});
+        cacheSizeSlider.gameObject.SetActive(false);
+
+        minTapsSlider.value = minTaps;
+        minTapsSlider.minValue = 0.5f;
+        minTapsSlider.onValueChanged.AddListener( delegate {UpdateMinTaps();});
+        minTapsSlider.gameObject.SetActive(false);
+
+        maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
+        maxTimeBetweenTapsSlider.minValue = 0.5f;
+        maxTimeBetweenTapsSlider.onValueChanged.AddListener( delegate {UpdateMaxTimeBetweenTaps();});
+        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+    }
 }
