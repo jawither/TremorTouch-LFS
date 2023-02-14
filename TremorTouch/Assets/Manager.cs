@@ -173,7 +173,7 @@ public class Manager : MonoBehaviour
         return new Vector2(x, y);
     }
 
-    Vector2 GetMeanPositionSecondImplementation()
+    Vector2 GetWeightedMeanPositionSecondImplementation()
     {
         float x = 0;
         float y = 0;
