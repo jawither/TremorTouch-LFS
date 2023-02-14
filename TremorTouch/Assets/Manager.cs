@@ -173,6 +173,26 @@ public class Manager : MonoBehaviour
         return new Vector2(x, y);
     }
 
+    Vector2 GetMeanPositionSecondImplementation()
+    {
+        float x = 0;
+        float y = 0;
+
+        float weight = 0.1f;
+        float weightMultiplier = - locations.Count / 2;
+
+        foreach (GameObject location in locations)
+        {
+            x += location.transform.position.x * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
+            y += location.transform.position.y * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
+            
+            if(locations.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
+            weightMultiplier += 1;
+        }
+
+        return new Vector2(x / locations.Count, y / locations.Count);
+    }
+
 
     // Reset: Empties cache and makes mean invisible.
 
