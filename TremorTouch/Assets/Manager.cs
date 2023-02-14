@@ -122,6 +122,7 @@ public class Manager : MonoBehaviour
         else
         {
             SetMeanColor(waiting);
+            if(colorTapsOnRecencyFlag) ColorTapsOnRecency();
             switch (alg)
             {
                 case Algorithm.Base:
@@ -258,7 +259,7 @@ public class Manager : MonoBehaviour
         for(var i = cache.Count - 1; i >= 0; i--)
         {
             var val = 1 - weight * (cache.Count - i);
-            cache[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, val);
+            cache[i].GetComponent<Image>().color = new Color(1, 1, 1, val);
         }
     }
 
