@@ -12,8 +12,15 @@ public class Manager : MonoBehaviour
     static int minTaps = 2;
     static float maxTimeBetweenTaps = 0.8f;
 
+    enum Algorithm
+    {
+        Base,
+        Weighted
+    }
+    Algorithm alg;
 
 
+    public Toggle AlgorithmToggle;
     public Toggle settingsToggle;
     public Slider cacheSizeSlider;
     public Slider minTapsSlider;
@@ -43,7 +50,8 @@ public class Manager : MonoBehaviour
         waiting = new Color(255f, 0f, 0f, 0.5f);
 
 
-        settingsToggle.onValueChanged.AddListener( delegate {ToggleValueChanged();});
+        AlgorithmToggle.onValueChanged.AddListener( delegate {AlgorithmValueChanged();});
+        settingsToggle.onValueChanged.AddListener( delegate {SettingValueChanged();});
 
         cacheSizeSlider.value = cacheSize;
         cacheSizeSlider.minValue = 0.2f;
@@ -181,9 +189,22 @@ public class Manager : MonoBehaviour
     }
 
 
+    // UI toggle for changing algorithm from base to weighted
+
+    void AlgorithmValueChanged()
+    {
+        if (alg == Algorithm.Base) {
+            alg = Algorithm.Weighted;
+        }
+        else if (alg == Algorithm.Weighted) {
+            alg = Algorithm.Base;
+        }
+    }
+
+
     // UI toggle that sets visibility for sliders on and off.
 
-    void ToggleValueChanged() {
+    void SettingValueChanged() {
         if (visible == false)
         {
         cacheSizeSlider.gameObject.SetActive(true);
