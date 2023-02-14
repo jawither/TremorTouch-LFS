@@ -4,9 +4,18 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using System.Collections;
+using System.Linq;
 
 public class Manager : MonoBehaviour
 {
+
+    //Types of algorithm
+    enum Algorithm
+    {
+        Base,
+        Weighted
+    }
 
     // Tunable parameters
     static int cacheSize = 8;
@@ -54,7 +63,7 @@ public class Manager : MonoBehaviour
     void Update()
     {
         // Receive user input
-        if (Input.GetButtonDown("Fire1")) ReceiveUserTap();
+        if (Input.GetButtonDown("Fire1")) ReceiveUserTap(Algorithm.Weighted);
 
         // Exit if cache is empty
         if (cache.Count == 0) return;
@@ -71,7 +80,7 @@ public class Manager : MonoBehaviour
         }
 
         // Issue tap if clock expired and enough taps
-        if (cache.Count <= cacheSize)
+        if (cache.Count >= minTaps) // stuart: I changed this to >= because of different algs
         {
             IssueTapToSystem();
             return;
@@ -85,35 +94,64 @@ public class Manager : MonoBehaviour
     // ReceiveUserTap: called on frame that user taps the screen.
     // Updates Manager metadata.
 
-    void ReceiveUserTap()
+    void ReceiveUserTap(Algorithm alg)
     {
         // Reset clock
         timeSinceLastTap = 0f;
 
-        // If cache at capcity, remove oldest tap
-        if (cache.Count == cacheSize)
+        switch (alg)
         {
-            GameObject.Destroy(cache[0]);
-            cache.RemoveAt(0);
+            case Algorithm.Base:
+                // If cache at capcity, remove oldest tap
+                if (cache.Count == cacheSize)
+                {
+                    GameObject.Destroy(cache[0]);
+                    cache.RemoveAt(0);
+                }
+
+                // Create new tap location at mouse
+                Vector3 destination = Input.mousePosition;
+                GameObject newLocation = Instantiate(locationPrefab, destination,
+                    Quaternion.identity, canvas.transform);
+                cache.Add(newLocation);
+
+                // Make mean location visible and update its location iff new tap count > minTaps
+                if (cache.Count < minTaps)
+                {
+                    SetMeanColor(Color.clear);
+                }
+                else
+                {
+                    SetMeanColor(waiting);
+                    mean.transform.position = GetMeanPosition();
+                }
+                break;
+            case Algorithm.Weighted:
+
+                //Create new tap location at mouse
+                destination = Input.mousePosition;
+                newLocation = Instantiate(locationPrefab, destination,
+                    Quaternion.identity, canvas.transform);
+                cache.Add(newLocation);
+
+                //Make mean location visible and update its location iff new tap count > minTaps
+                // Make mean location visible and update its location iff new tap count > minTaps
+                if (cache.Count < minTaps)
+                {
+                    SetMeanColor(Color.clear);
+                }
+                else
+                {
+                    SetMeanColor(waiting);
+                    mean.transform.position = GetWeightedMeanPosition();
+                }
+
+
+                break;
         }
 
-        // Create new tap location at mouse
-        Vector3 destination = Input.mousePosition;
-        GameObject newLocation = Instantiate(locationPrefab, destination,
-            Quaternion.identity, canvas.transform);
-        cache.Add(newLocation);
-
-        // Make mean location visible and update its location iff new tap count > minTaps
-        if (cache.Count < minTaps)
-        {
-            SetMeanColor(Color.clear);
-        }
-        else
-        {
-            SetMeanColor(waiting);
-            mean.transform.position = GetMeanPosition();
-        }
     }
+
 
 
     // GetMeanPosition: Returns 2d coordinates that is the mean of all positions
@@ -131,6 +169,29 @@ public class Manager : MonoBehaviour
         }
 
         return new Vector2(x / cache.Count, y / cache.Count);
+    }
+
+    Vector2 GetWeightedMeanPosition()
+    {
+
+        var items = Enumerable.Range(1, cache.Count);
+
+        float sum = (float)items.Select(i => 1.0 / i).Sum();
+
+
+        float x = 0;
+        float y = 0;
+
+        int Denominator = cache.Count;
+
+        foreach (GameObject location in cache)
+        {
+            x += (location.transform.position.x / (Denominator * sum));
+            y += (location.transform.position.y / (Denominator * sum));
+            Denominator -= 1;
+        }
+
+        return new Vector2(x, y);
     }
 
 
