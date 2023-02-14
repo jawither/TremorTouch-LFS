@@ -227,4 +227,16 @@ public class Manager : MonoBehaviour
         mean.GetComponent<Image>().color = color;
     }
 
+    // ColorTapsOnRecency: Makes more recent taps have higher opacity 
+    
+    void ColorTapsOnRecency()
+    {
+        float weight = 1f / (cacheSize * 2);
+        for(var i = locations.Count - 1; i >= 0; i--)
+        {
+            var val = 1 - weight * (locations.Count - i);
+            locations[i].GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, val);
+        }
+    }
+
 }
