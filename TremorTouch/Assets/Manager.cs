@@ -53,6 +53,7 @@ public class Manager : MonoBehaviour
     void Start()
     {
         Assert.IsTrue(minTaps >= 1);
+        alg = Algorithm.Base;
 
         canvas = GameObject.Find("Canvas");
         cache = new List<GameObject>(cacheSize);
