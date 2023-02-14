@@ -1293,7 +1293,7 @@ GameObject:
   - component: {fileID: 840469035}
   - component: {fileID: 840469036}
   m_Layer: 5
-  m_Name: Slider
+  m_Name: CacheSizeSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2279,11 +2279,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fea1d393ee456448ba40403ce2a7b9f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AlgorithmToggle: {fileID: 0}
-  settingsToggle: {fileID: 0}
-  cacheSizeSlider: {fileID: 0}
-  minTapsSlider: {fileID: 0}
-  maxTimeBetweenTapsSlider: {fileID: 0}
+  AlgorithmToggle: {fileID: 224820031}
+  settingsToggle: {fileID: 2057265594}
+  cacheSizeSlider: {fileID: 840469036}
+  minTapsSlider: {fileID: 1506448808}
+  maxTimeBetweenTapsSlider: {fileID: 2004448313}
   locationPrefab: {fileID: 6775832514894322094, guid: 6740e5e749ee840e88979ddbbb6b1bdb, type: 3}
   meanPrefab: {fileID: 5364618845449360811, guid: 156f385ed5e4340358ead0ffe28d9308, type: 3}
 --- !u!4 &1312005338
@@ -2388,7 +2388,7 @@ GameObject:
   - component: {fileID: 1506448807}
   - component: {fileID: 1506448808}
   m_Layer: 5
-  m_Name: Slider (1)
+  m_Name: MinTapsSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3037,7 +3037,7 @@ GameObject:
   - component: {fileID: 2004448312}
   - component: {fileID: 2004448313}
   m_Layer: 5
-  m_Name: Slider (2)
+  m_Name: MaxTimeBetweenTapsSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
