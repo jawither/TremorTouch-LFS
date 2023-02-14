@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using System.Collections;
 using System.Linq;
 
 public class Manager : MonoBehaviour
@@ -99,59 +98,39 @@ public class Manager : MonoBehaviour
         // Reset clock
         timeSinceLastTap = 0f;
 
-        switch (alg)
+        // If cache at capcity, remove oldest tap
+        if (cache.Count == cacheSize)
         {
-            case Algorithm.Base:
-                // If cache at capcity, remove oldest tap
-                if (cache.Count == cacheSize)
-                {
-                    GameObject.Destroy(cache[0]);
-                    cache.RemoveAt(0);
-                }
+            GameObject.Destroy(cache[0]);
+            cache.RemoveAt(0);
+        }
 
-                // Create new tap location at mouse
-                Vector3 destination = Input.mousePosition;
-                GameObject newLocation = Instantiate(locationPrefab, destination,
-                    Quaternion.identity, canvas.transform);
-                cache.Add(newLocation);
+        // Create new tap location at mouse
+        Vector3 destination = Input.mousePosition;
+        GameObject newLocation = Instantiate(locationPrefab, destination,
+            Quaternion.identity, canvas.transform);
+        cache.Add(newLocation);
 
-                // Make mean location visible and update its location iff new tap count > minTaps
-                if (cache.Count < minTaps)
-                {
-                    SetMeanColor(Color.clear);
-                }
-                else
-                {
-                    SetMeanColor(waiting);
+        // Make mean location visible and update its location iff new tap count > minTaps
+        if (cache.Count < minTaps)
+        {
+            SetMeanColor(Color.clear);
+        }
+        else
+        {
+            SetMeanColor(waiting);
+            switch (alg)
+            {
+                case Algorithm.Base:
                     mean.transform.position = GetMeanPosition();
-                }
-                break;
-            case Algorithm.Weighted:
-
-                //Create new tap location at mouse
-                destination = Input.mousePosition;
-                newLocation = Instantiate(locationPrefab, destination,
-                    Quaternion.identity, canvas.transform);
-                cache.Add(newLocation);
-
-                //Make mean location visible and update its location iff new tap count > minTaps
-                // Make mean location visible and update its location iff new tap count > minTaps
-                if (cache.Count < minTaps)
-                {
-                    SetMeanColor(Color.clear);
-                }
-                else
-                {
-                    SetMeanColor(waiting);
+                    break;
+                case Algorithm.Weighted:
                     mean.transform.position = GetWeightedMeanPosition();
-                }
-
-
-                break;
+                    break;
+            }
         }
 
     }
-
 
 
     // GetMeanPosition: Returns 2d coordinates that is the mean of all positions
