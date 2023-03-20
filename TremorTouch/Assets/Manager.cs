@@ -107,8 +107,8 @@ public class Manager : MonoBehaviour
         // Issue tap if clock expired and enough taps
         if (cache.Count <= cacheSize)
         {
-            if (!toExecuteTap)
-            {
+            SetMeanColor(Color.yellow);
+            if (!toExecuteTap){
                 timeSinceExecutedTap = timeSinceLastTap;
                 numTapsOnExecute = totalTaps;
                 toExecuteTap = true;
@@ -163,8 +163,8 @@ public class Manager : MonoBehaviour
         }
         else
         {
-            SetMeanColor(waiting);
-            if (colorTapsOnRecencyFlag) ColorTapsOnRecency();
+            if(!toExecuteTap) SetMeanColor(waiting);
+            if(colorTapsOnRecencyFlag) ColorTapsOnRecency();
             switch (alg)
             {
                 case Algorithm.Base:
