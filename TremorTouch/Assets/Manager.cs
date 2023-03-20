@@ -37,6 +37,10 @@ public class Manager : MonoBehaviour
 
     // Manager vars
     float timeSinceLastTap = 0f;
+    int totalTaps = 0;
+    int numTapsOnExecute = 0;
+    float timeSinceExecutedTap = 0f;
+    bool toExecuteTap = false;
     List<GameObject> cache;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
@@ -74,11 +78,14 @@ public class Manager : MonoBehaviour
     }
 
 
-    // Update: Called once per frame by Unity.
+      // Update: Called once per frame by Unity.
     void Update()
     {
         // Receive user input
-        if (Input.GetButtonDown("Fire1")) ReceiveUserTap();
+        if (Input.GetButtonDown("Fire1")){
+            totalTaps += 1;
+            ReceiveUserTap();
+        }
 
         // Exit if cache is empty
         if (cache.Count == 0) return;
@@ -95,15 +102,30 @@ public class Manager : MonoBehaviour
         }
 
         // Issue tap if clock expired and enough taps
-        if (cache.Count >= minTaps) // stuart: I changed this to >= because of different algs
+        if (cache.Count <= cacheSize)
         {
-            IssueTapToSystem();
+            if (!toExecuteTap){
+                timeSinceExecutedTap = timeSinceLastTap;
+                numTapsOnExecute = totalTaps;
+                toExecuteTap = true;
+            }
+            else if(timeSinceLastTap - timeSinceExecutedTap >= 3f){
+                if (totalTaps > numTapsOnExecute){
+                    IssueHoldToSystem();
+                }
+                else{
+                    IssueTapToSystem();
+                }
+                toExecuteTap = false;
+            }
             return;
         }
+
 
         // We should never get here
         Assert.IsTrue(false);
     }
+
 
 
     // ReceiveUserTap: called on frame that user taps the screen.
@@ -240,6 +262,12 @@ public class Manager : MonoBehaviour
 
         // Make mean red and empty cache
         SetMeanColor(Color.red);
+        ClearCache();
+    }
+
+    void IssueHoldToSystem()
+    {
+        SetMeanColor(Color.green);
         ClearCache();
     }
 
