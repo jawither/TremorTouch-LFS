@@ -20,11 +20,13 @@ public class Manager : MonoBehaviour
     Algorithm alg;
 
     public Toggle AlgorithmToggle;
+    public Toggle HoldToggle;
     public Toggle settingsToggle;
     public Slider cacheSizeSlider;
     public Slider minTapsSlider;
     public Slider maxTimeBetweenTapsSlider;
     bool visible = false;
+    bool holdFunctionality = false;
 
     // Tunable parameters
     static int cacheSize = 8;
@@ -78,11 +80,12 @@ public class Manager : MonoBehaviour
     }
 
 
-      // Update: Called once per frame by Unity.
+    // Update: Called once per frame by Unity.
     void Update()
     {
         // Receive user input
-        if (Input.GetButtonDown("Fire1")){
+        if (Input.GetButtonDown("Fire1"))
+        {
             totalTaps += 1;
             ReceiveUserTap();
         }
@@ -104,16 +107,20 @@ public class Manager : MonoBehaviour
         // Issue tap if clock expired and enough taps
         if (cache.Count <= cacheSize)
         {
-            if (!toExecuteTap){
+            if (!toExecuteTap)
+            {
                 timeSinceExecutedTap = timeSinceLastTap;
                 numTapsOnExecute = totalTaps;
                 toExecuteTap = true;
             }
-            else if(timeSinceLastTap - timeSinceExecutedTap >= 3f){
-                if (totalTaps > numTapsOnExecute){
+            else if (timeSinceLastTap - timeSinceExecutedTap >= 3f)
+            {
+                if (totalTaps > numTapsOnExecute && holdFunctionality)
+                {
                     IssueHoldToSystem();
                 }
-                else{
+                else
+                {
                     IssueTapToSystem();
                 }
                 toExecuteTap = false;
@@ -157,7 +164,7 @@ public class Manager : MonoBehaviour
         else
         {
             SetMeanColor(waiting);
-            if(colorTapsOnRecencyFlag) ColorTapsOnRecency();
+            if (colorTapsOnRecencyFlag) ColorTapsOnRecency();
             switch (alg)
             {
                 case Algorithm.Base:
@@ -218,14 +225,14 @@ public class Manager : MonoBehaviour
         float y = 0;
 
         float weight = 0.1f;
-        float weightMultiplier = - cache.Count / 2;
+        float weightMultiplier = -cache.Count / 2;
 
         foreach (GameObject location in cache)
         {
             x += location.transform.position.x * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
             y += location.transform.position.y * (weightedModeFlag ? (1 + weight * weightMultiplier) : 1);
 
-            if(cache.Count % 2 == 0 && (weightMultiplier  ==  -1)) weightMultiplier += 1;
+            if (cache.Count % 2 == 0 && (weightMultiplier == -1)) weightMultiplier += 1;
             weightMultiplier += 1;
         }
 
@@ -297,7 +304,7 @@ public class Manager : MonoBehaviour
     void ColorTapsOnRecency()
     {
         float weight = 1f / (cacheSize * 2);
-        for(var i = cache.Count - 1; i >= 0; i--)
+        for (var i = cache.Count - 1; i >= 0; i--)
         {
             var val = 1 - weight * (cache.Count - i);
             cache[i].GetComponent<Image>().color = new Color(1, 1, 1, val);
@@ -308,30 +315,47 @@ public class Manager : MonoBehaviour
 
     void AlgorithmValueChanged()
     {
-        if (alg == Algorithm.Base) {
+        if (alg == Algorithm.Base)
+        {
             alg = Algorithm.Weighted;
         }
-        else if (alg == Algorithm.Weighted) {
+        else if (alg == Algorithm.Weighted)
+        {
             alg = Algorithm.Base;
         }
+    }
+
+    void HoldValueChanged()
+    {
+        if (holdFunctionality)
+        {
+            holdFunctionality = false;
+        }
+        else if (!holdFunctionality)
+        {
+            holdFunctionality = true;
+        }
+
     }
 
 
     // UI toggle that sets visibility for sliders on and off.
 
-    void SettingValueChanged() {
+    void SettingValueChanged()
+    {
         if (visible == false)
         {
-        cacheSizeSlider.gameObject.SetActive(true);
-        minTapsSlider.gameObject.SetActive(true);
-        maxTimeBetweenTapsSlider.gameObject.SetActive(true);
-        visible = true;
+            cacheSizeSlider.gameObject.SetActive(true);
+            minTapsSlider.gameObject.SetActive(true);
+            maxTimeBetweenTapsSlider.gameObject.SetActive(true);
+            visible = true;
         }
-        else {
-        cacheSizeSlider.gameObject.SetActive(false);
-        minTapsSlider.gameObject.SetActive(false);
-        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
-        visible = false;
+        else
+        {
+            cacheSizeSlider.gameObject.SetActive(false);
+            minTapsSlider.gameObject.SetActive(false);
+            maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+            visible = false;
         }
 
     }
@@ -365,22 +389,23 @@ public class Manager : MonoBehaviour
 
     void Settings()
     {
-        AlgorithmToggle.onValueChanged.AddListener( delegate {AlgorithmValueChanged();});
-        settingsToggle.onValueChanged.AddListener( delegate {SettingValueChanged();});
+        AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
+        HoldToggle.onValueChanged.AddListener(delegate { HoldValueChanged(); });
+        settingsToggle.onValueChanged.AddListener(delegate { SettingValueChanged(); });
 
         cacheSizeSlider.value = cacheSize;
         cacheSizeSlider.minValue = 0.2f;
-        cacheSizeSlider.onValueChanged.AddListener( delegate {UpdateCacheSize();});
+        cacheSizeSlider.onValueChanged.AddListener(delegate { UpdateCacheSize(); });
         cacheSizeSlider.gameObject.SetActive(false);
 
         minTapsSlider.value = minTaps;
         minTapsSlider.minValue = 0.5f;
-        minTapsSlider.onValueChanged.AddListener( delegate {UpdateMinTaps();});
+        minTapsSlider.onValueChanged.AddListener(delegate { UpdateMinTaps(); });
         minTapsSlider.gameObject.SetActive(false);
 
         maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
         maxTimeBetweenTapsSlider.minValue = 0.5f;
-        maxTimeBetweenTapsSlider.onValueChanged.AddListener( delegate {UpdateMaxTimeBetweenTaps();});
+        maxTimeBetweenTapsSlider.onValueChanged.AddListener(delegate { UpdateMaxTimeBetweenTaps(); });
         maxTimeBetweenTapsSlider.gameObject.SetActive(false);
     }
 }
