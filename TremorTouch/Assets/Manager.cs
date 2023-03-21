@@ -147,6 +147,7 @@ public class Manager : MonoBehaviour
 
     void ReceiveUserTap()
     {
+        if(toExecuteTap) return;
         // Reset clock
         timeSinceLastTap = 0f;
 
