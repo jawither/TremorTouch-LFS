@@ -32,13 +32,17 @@ public class Manager : MonoBehaviour
     public Slider cacheSizeSlider;
     public Slider minTapsSlider;
     public Slider maxTimeBetweenTapsSlider;
+    public Slider timeBetweenTapAndHoldSlider;
+    public Slider holdDurationSlider;
     bool visible = false;
     bool holdFunctionality = false;
 
     // Tunable parameters
     static int cacheSize = 8;
     static int minTaps = 3;
-    static float maxTimeBetweenTaps = 0.8f;
+    static float maxTimeBetweenTaps = 2f;
+    static float timeBetweenTapAndHold = 5f;
+    static float holdDuration = 4f;
 
     //Option flags
     bool colorTapsOnRecencyFlag = true;
@@ -358,6 +362,8 @@ public class Manager : MonoBehaviour
             cacheSizeSlider.gameObject.SetActive(true);
             minTapsSlider.gameObject.SetActive(true);
             maxTimeBetweenTapsSlider.gameObject.SetActive(true);
+            timeBetweenTapAndHoldSlider.gameObject.SetActive(true);
+            holdDurationSlider.gameObject.SetActive(true);
             visible = true;
         }
         else
@@ -365,13 +371,14 @@ public class Manager : MonoBehaviour
             cacheSizeSlider.gameObject.SetActive(false);
             minTapsSlider.gameObject.SetActive(false);
             maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+            timeBetweenTapAndHoldSlider.gameObject.SetActive(false);
+            holdDurationSlider.gameObject.SetActive(false);
             visible = false;
         }
 
     }
 
-
-    // UI slider for changing cache size
+    // UI slider for changing cache size (range from 2-8)
 
     void UpdateCacheSize()
     {
@@ -380,24 +387,46 @@ public class Manager : MonoBehaviour
     }
 
 
-    // UI slider for changing minimum number of taps
+    // UI slider for changing minimum number of taps (range from 1-3)
 
     void UpdateMinTaps()
     {
-        minTaps = Mathf.CeilToInt(minTapsSlider.value * 2);
+        minTaps = Mathf.CeilToInt(minTapsSlider.value * 3);
         print(minTaps);
     }
 
 
-    // UI slider for changing max time between taps
+    // UI slider for changing max time between taps (range from 0.5-2)
+    // lower time means the mean location turns yellow faster
 
     void UpdateMaxTimeBetweenTaps()
     {
-        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 0.8f;
+        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 2f;
         print(maxTimeBetweenTaps);
     }
 
-    void Settings()
+
+    // UI slider for changing time between tap and hold (range from 1-5)
+    // basically how much time a user has to respond to the yellow circle and make it a hold
+    // going to disable changing mean location once circle turns yellow
+    void UpdateTimeBetweenTapAndHold()
+    {
+        timeBetweenTapAndHold = timeBetweenTapAndHoldSlider.value * 5f;
+        print(timeBetweenTapAndHold);
+    }
+
+
+    // UI slider for how long a hold should be performed for (range from 1-4)
+    // basically duration of screen contact
+    void UpdateHoldDuration()
+    {
+        holdDuration = holdDurationSlider.value * 4f;
+        print(holdDuration);
+
+    }
+
+
+        void Settings()
     {
         AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
         HoldToggle.onValueChanged.AddListener(delegate { HoldValueChanged(); });
@@ -409,16 +438,26 @@ public class Manager : MonoBehaviour
         cacheSizeSlider.gameObject.SetActive(false);
 
         minTapsSlider.value = minTaps;
-        minTapsSlider.minValue = 0.5f;
+        minTapsSlider.minValue = 0.3f;
         minTapsSlider.onValueChanged.AddListener(delegate { UpdateMinTaps(); });
         minTapsSlider.gameObject.SetActive(false);
 
         maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
-        maxTimeBetweenTapsSlider.minValue = 0.5f;
+        maxTimeBetweenTapsSlider.minValue = 0.25f;
         maxTimeBetweenTapsSlider.onValueChanged.AddListener(delegate { UpdateMaxTimeBetweenTaps(); });
         maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+
+        timeBetweenTapAndHoldSlider.value = timeBetweenTapAndHold;
+        timeBetweenTapAndHoldSlider.minValue = 0.2f;
+        timeBetweenTapAndHoldSlider.onValueChanged.AddListener(delegate { UpdateTimeBetweenTapAndHold(); });
+        timeBetweenTapAndHoldSlider.gameObject.SetActive(false);
+
+        holdDurationSlider.value = holdDuration;
+        holdDurationSlider.minValue = 0.25f;
+        holdDurationSlider.onValueChanged.AddListener(delegate { UpdateHoldDuration(); });
+        holdDurationSlider.gameObject.SetActive(false);
     }
-    
+
     InputType AnalyzeInput()
     {
 
