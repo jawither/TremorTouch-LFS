@@ -66,6 +66,33 @@ public class Manager : MonoBehaviour
     GameObject canvas;
 
 
+    //Function then location variables
+    /*
+        Motivation: having two modes that the user can choose from to increase flexbility
+        
+        Location then function:
+        1. user makes a series of taps to choose a location 
+        2. user makes another tap (or more) to indicate the function that they are trying to use
+
+        Function then location:
+        1. user makes a tap to indicate the function that they are trying to use
+            -Implementation: There are 4 options (tap, hold, swipe, pinch). Divide the screen into 
+                             quadrants and have the user make a tap to choose the mode
+            -Concern: the user may tap a few times to indicate a quadrant. Should there be a buffer period?
+        2. user makes a series of taps to choose a location 
+    */
+    bool functionThenLocationFlag = true;
+    enum UserAction
+    {
+        Tap,
+        Swipe,
+        Hold,
+        Pinch
+    }
+    UserAction action = UserAction.Tap;
+    bool selectingQuadrantFlag = true;
+
+
     // Start: Called before the first frame update by Unity.
     void Start()
     {
@@ -97,8 +124,19 @@ public class Manager : MonoBehaviour
         // Receive user input
         if (Input.GetButtonDown("Fire1"))
         {
-            totalTaps += 1;
-            ReceiveUserTap();
+            if(functionThenLocationFlag){
+                if(selectingQuadrantFlag){
+                    ReceiveUserTapQuadrant();
+                    selectingQuadrantFlag = false;
+                }
+                else{
+                    ReceiveUserTap();
+                }
+            }
+            else{
+                totalTaps += 1;
+                ReceiveUserTap();
+            }
         }
 
         // Exit if cache is empty
@@ -118,23 +156,50 @@ public class Manager : MonoBehaviour
         // Issue tap if clock expired and enough taps
         if (cache.Count <= cacheSize)
         {
-            SetMeanColor(Color.yellow);
-            if (!toExecuteTap){
-                timeSinceExecutedTap = timeSinceLastTap;
-                numTapsOnExecute = totalTaps;
-                toExecuteTap = true;
+            if(functionThenLocationFlag){   //Implementation for function then location [see above]
+                selectingQuadrantFlag = true;
+                switch(action){
+                    case UserAction.Tap:
+                    {
+                        IssueTapToSystem();
+                        break;
+                    }
+                    case UserAction.Hold:
+                    {
+                        IssueHoldToSystem();
+                        break;
+                    }
+                    case UserAction.Swipe:
+                    {
+                        IssueTapToSystem();
+                        break;
+                    }
+                    case UserAction.Pinch:
+                    {
+                        IssueTapToSystem();
+                        break;
+                    }
+                }
             }
-            else if (timeSinceLastTap - timeSinceExecutedTap >= 3f)
-            {
-                if (totalTaps > numTapsOnExecute && holdFunctionality)
-                {
-                    IssueHoldToSystem();
+            else{                           //Implementation for location then function [see above]
+                SetMeanColor(Color.yellow);
+                if (!toExecuteTap){
+                    timeSinceExecutedTap = timeSinceLastTap;
+                    numTapsOnExecute = totalTaps;
+                    toExecuteTap = true;
                 }
-                else
+                else if (timeSinceLastTap - timeSinceExecutedTap >= 3f)
                 {
-                    IssueTapToSystem();
+                    if (totalTaps > numTapsOnExecute && holdFunctionality)
+                    {
+                        IssueHoldToSystem();
+                    }
+                    else
+                    {
+                        IssueTapToSystem();
+                    }
+                    toExecuteTap = false;
                 }
-                toExecuteTap = false;
             }
             return;
         }
@@ -145,6 +210,25 @@ public class Manager : MonoBehaviour
     }
 
 
+    // ReceiveUserTapQuadrant: if on the function then location mode, this is for the initial tap.
+    // Set the action variable based on the quadrant that the user taps 
+    void ReceiveUserTapQuadrant()
+    {
+        Vector3 tapLocation = Input.mousePosition;
+
+        if(tapLocation.x < Screen.width / 2 && tapLocation.y >= Screen.height / 2){       //Quadrant 1 : Tap
+            action = UserAction.Tap;
+        }
+        else if(tapLocation.x >= Screen.width / 2 && tapLocation.y >= Screen.height / 2){  //Quadrant 2 : Hold
+            action = UserAction.Hold;
+        }
+        else if(tapLocation.x < Screen.width / 2 && tapLocation.y < Screen.height / 2){  //Quadrant 3 : Swipe
+            action = UserAction.Swipe;
+        }
+        else if(tapLocation.x >= Screen.width / 2 && tapLocation.y < Screen.height / 2){  //Quadrant 4 : Pinch
+            action = UserAction.Pinch;
+        }
+    }
 
     // ReceiveUserTap: called on frame that user taps the screen.
     // Updates Manager metadata.
@@ -152,6 +236,7 @@ public class Manager : MonoBehaviour
     void ReceiveUserTap()
     {
         if(toExecuteTap) return;
+
         // Reset clock
         timeSinceLastTap = 0f;
 
