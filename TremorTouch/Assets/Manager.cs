@@ -16,6 +16,13 @@ public class Manager : MonoBehaviour
         Weighted
     }
 
+    //Types of input
+    enum InputType
+    {
+        Tap,
+        Scroll
+    }
+
     // Settings variables to change from within app
     Algorithm alg;
 
@@ -254,6 +261,8 @@ public class Manager : MonoBehaviour
     void IssueTapToSystem()
     {
 
+        AnalyzeInput();
+
         // Get list of all UI elements at mean's location
         m_PointerEventData = new PointerEventData(m_EventSystem);
         m_PointerEventData.position = mean.transform.position;
@@ -407,5 +416,56 @@ public class Manager : MonoBehaviour
         maxTimeBetweenTapsSlider.minValue = 0.5f;
         maxTimeBetweenTapsSlider.onValueChanged.AddListener(delegate { UpdateMaxTimeBetweenTaps(); });
         maxTimeBetweenTapsSlider.gameObject.SetActive(false);
+    }
+    
+    InputType AnalyzeInput()
+    {
+
+        var minx = 10000.0f;
+        var maxx = -10000.0f;
+
+        var miny = 10000.0f;
+        var maxy = -10000.0f;
+
+        foreach(var input in cache)
+        {
+            var x = input.transform.position.x;
+            var y = input.transform.position.y;
+
+            if(x > maxx)
+            {
+                maxx = x;
+            }
+
+            if(x < minx)
+            {
+                minx = x;
+            }
+
+            if(y > maxy)
+            {
+                maxy = y;
+            }
+
+            if(y < miny)
+            {
+                miny = y;
+            }
+        }
+
+        var yrange = maxy - miny;
+        var xrange = maxx - minx;
+
+
+        if(yrange > 3 * xrange)
+        {
+            print("SCROLL");
+            return InputType.Scroll;
+        }
+        else
+        {
+            print("TAP");
+            return InputType.Tap;
+        }
     }
 }
