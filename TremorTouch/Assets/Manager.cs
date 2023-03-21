@@ -28,6 +28,7 @@ public class Manager : MonoBehaviour
 
     public Toggle AlgorithmToggle;
     public Toggle HoldToggle;
+    public Toggle QuadrantSelectionToggle;
     public Toggle settingsToggle;
     public Slider cacheSizeSlider;
     public Slider minTapsSlider;
@@ -69,19 +70,19 @@ public class Manager : MonoBehaviour
     //Function then location variables
     /*
         Motivation: having two modes that the user can choose from to increase flexbility
-        
+
         Location then function:
-        1. user makes a series of taps to choose a location 
+        1. user makes a series of taps to choose a location
         2. user makes another tap (or more) to indicate the function that they are trying to use
 
         Function then location:
         1. user makes a tap to indicate the function that they are trying to use
-            -Implementation: There are 4 options (tap, hold, swipe, pinch). Divide the screen into 
+            -Implementation: There are 4 options (tap, hold, swipe, pinch). Divide the screen into
                              quadrants and have the user make a tap to choose the mode
             -Concern: the user may tap a few times to indicate a quadrant. Should there be a buffer period?
-        2. user makes a series of taps to choose a location 
+        2. user makes a series of taps to choose a location
     */
-    bool functionThenLocationFlag = true;
+    bool functionThenLocationFlag = false;
     enum UserAction
     {
         Tap,
@@ -211,7 +212,7 @@ public class Manager : MonoBehaviour
 
 
     // ReceiveUserTapQuadrant: if on the function then location mode, this is for the initial tap.
-    // Set the action variable based on the quadrant that the user taps 
+    // Set the action variable based on the quadrant that the user taps
     void ReceiveUserTapQuadrant()
     {
         Vector3 tapLocation = Input.mousePosition;
@@ -426,15 +427,36 @@ public class Manager : MonoBehaviour
 
     void HoldValueChanged()
     {
-        if (holdFunctionality)
+        if (holdFunctionality && QuadrantSelectionToggle.isOn == false)
         {
             holdFunctionality = false;
+            print(holdFunctionality);
+        }
+        else if (holdFunctionality && QuadrantSelectionToggle.isOn == true) {
+            // HoldFunctionality toggle should not be unchecked if QuadrantSelectionToggle is checked
+            HoldToggle.isOn = true;
+            holdFunctionality = true;
+            print(holdFunctionality);
         }
         else if (!holdFunctionality)
         {
             holdFunctionality = true;
+            print(holdFunctionality);
+
         }
 
+    }
+
+    void QuadrantValueChanged() {
+        if (functionThenLocationFlag) {
+            functionThenLocationFlag = false;
+        }
+        else if (!functionThenLocationFlag) {
+            // if we set quadrantSelectionToggle to true, holding functionality should also be true
+            functionThenLocationFlag = true;
+            HoldToggle.isOn = true;
+            print(holdFunctionality);
+        }
     }
 
 
@@ -515,6 +537,7 @@ public class Manager : MonoBehaviour
     {
         AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
         HoldToggle.onValueChanged.AddListener(delegate { HoldValueChanged(); });
+        QuadrantSelectionToggle.onValueChanged.AddListener(delegate {QuadrantValueChanged(); });
         settingsToggle.onValueChanged.AddListener(delegate { SettingValueChanged(); });
 
         cacheSizeSlider.value = cacheSize;
