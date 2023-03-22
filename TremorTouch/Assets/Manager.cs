@@ -182,7 +182,8 @@ public class Manager : MonoBehaviour
                     }
                 }
             }
-            else{                           //Implementation for location then function [see above]
+            else if (holdFunctionality)
+            {                           //Implementation for location then function [see above]
                 SetMeanColor(Color.yellow);
                 if (!toExecuteTap){
                     timeSinceExecutedTap = timeSinceLastTap;
@@ -191,7 +192,7 @@ public class Manager : MonoBehaviour
                 }
                 else if (timeSinceLastTap - timeSinceExecutedTap >= 3f)
                 {
-                    if (totalTaps > numTapsOnExecute && holdFunctionality)
+                    if (totalTaps > numTapsOnExecute)
                     {
                         IssueHoldToSystem();
                     }
@@ -201,6 +202,9 @@ public class Manager : MonoBehaviour
                     }
                     toExecuteTap = false;
                 }
+            }
+            else {
+                IssueTapToSystem();
             }
             return;
         }
@@ -374,6 +378,30 @@ public class Manager : MonoBehaviour
 
     void IssueHoldToSystem()
     {
+        // m_PointerEventData = new PointerEventData(m_EventSystem);
+        // m_PointerEventData.position = mean.transform.position;
+        // List<RaycastResult> results = new List<RaycastResult>();
+        // m_Raycaster.Raycast(m_PointerEventData, results);
+
+        // var pointer = new PointerEventData(EventSystem.current);
+
+        // // Issue a click to each of those UI elements
+        // foreach (RaycastResult result in results)
+        // {
+
+        //     ExecuteEvents.Execute(result.gameObject,
+        //         pointer, ExecuteEvents.pointerEnterHandler);
+        //     ExecuteEvents.Execute(result.gameObject,
+        //         pointer, ExecuteEvents.submitHandler);
+
+        //     int sleepValue = (int)holdDuration * 1000;
+        //     print(sleepValue);
+        //     Thread.Sleep(sleepValue);
+        //     ExecuteEvents.Execute(result.gameObject,
+        //         pointer, ExecuteEvents.pointerExitHandler);
+
+        // }
+
         SetMeanColor(Color.green);
         ClearCache();
     }
