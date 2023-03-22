@@ -5,6 +5,7 @@ using UnityEngine.Assertions;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using System.Linq;
+using System.Threading;
 
 public class Manager : MonoBehaviour
 {
@@ -190,7 +191,7 @@ public class Manager : MonoBehaviour
                     numTapsOnExecute = totalTaps;
                     toExecuteTap = true;
                 }
-                else if (timeSinceLastTap - timeSinceExecutedTap >= 3f)
+                else if (timeSinceLastTap - timeSinceExecutedTap >= timeBetweenTapAndHold)
                 {
                     if (totalTaps > numTapsOnExecute)
                     {
@@ -392,13 +393,13 @@ public class Manager : MonoBehaviour
         //     ExecuteEvents.Execute(result.gameObject,
         //         pointer, ExecuteEvents.pointerEnterHandler);
         //     ExecuteEvents.Execute(result.gameObject,
-        //         pointer, ExecuteEvents.submitHandler);
+        //         pointer, ExecuteEvents.pointerDownHandler);
 
         //     int sleepValue = (int)holdDuration * 1000;
         //     print(sleepValue);
         //     Thread.Sleep(sleepValue);
         //     ExecuteEvents.Execute(result.gameObject,
-        //         pointer, ExecuteEvents.pointerExitHandler);
+        //         pointer, ExecuteEvents.pointerUpHandler);
 
         // }
 
