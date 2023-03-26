@@ -60,7 +60,7 @@ public class Manager : MonoBehaviour
     public GameObject meanPrefab;
     GameObject mean;
     Color waiting;
-    List<GameObject> heldObjects;
+    HashSet<GameObject> heldObjects;
 
     GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
@@ -78,7 +78,7 @@ public class Manager : MonoBehaviour
 
         canvas = GameObject.Find("Canvas");
         cache = new List<GameObject>(cacheSize);
-        heldObjects = new List<GameObject>(100);
+        heldObjects = new HashSet<GameObject>();
 
         waiting = new Color(255f, 0f, 0f, 0.5f);
 
@@ -141,13 +141,6 @@ public class Manager : MonoBehaviour
             return;
         }
 
-        //if (cache.Count >= cacheSize)
-        //{
-        //    IssueHoldToSystem();
-        //    return;
-        //}
-
-
         // We should never get here
         Assert.IsTrue(false);
     }
@@ -203,7 +196,6 @@ public class Manager : MonoBehaviour
 
     void ReleaseHeldObjects(bool force)
     {
-        //TODO could be optimized with a map lookup
 
         // For each item that is held, check whether the mean is above it,
         // if not, issue a mouseup. (mouseup no matter what if force=true)
@@ -298,7 +290,6 @@ public class Manager : MonoBehaviour
 
     void Reset()
     {
-        print("Reset");
         SetMeanColor(Color.clear);
         ClearCache();
     }
