@@ -58,7 +58,7 @@ public class Manager : MonoBehaviour
     List<GameObject> cache;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
-    GameObject mean;
+    public GameObject mean;
     Color waiting;
     HashSet<GameObject> heldObjects;
 
@@ -70,8 +70,9 @@ public class Manager : MonoBehaviour
 
 
 
-    // Start: Called before the first frame update by Unity.
-    void Start()
+    // Awake: Called before the first frame update by Unity, and before
+    // other scripts' Start() calls.
+    void Awake()
     {
         Assert.IsTrue(minTaps >= 1);
         alg = Algorithm.Base;
@@ -135,7 +136,6 @@ public class Manager : MonoBehaviour
         // Reset if clock expired and enough taps (system was holding)
         if (cache.Count >= cacheSize)
         {
-            print("clock expired");
             Reset();
             ReleaseHeldObjects(true);
             return;
@@ -219,7 +219,6 @@ public class Manager : MonoBehaviour
                 ExecuteEvents.Execute(obj,
                     new PointerEventData(EventSystem.current), ExecuteEvents.pointerUpHandler);
                 heldObjects.Remove(obj);
-                print(obj.name);
             }
         }
     }
