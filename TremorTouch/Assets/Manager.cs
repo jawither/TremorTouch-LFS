@@ -137,7 +137,7 @@ public class Manager : MonoBehaviour
         if (cache.Count >= cacheSize)
         {
             Reset();
-            ReleaseHeldObjects(true);
+            StartCoroutine(ReleaseHeldObjects(true));
             return;
         }
 
@@ -188,14 +188,16 @@ public class Manager : MonoBehaviour
                     break;
             }
 
-            ReleaseHeldObjects(false);
+            StartCoroutine(ReleaseHeldObjects(false));
 
         }
 
     }
 
-    void ReleaseHeldObjects(bool force)
+    IEnumerator ReleaseHeldObjects(bool force)
     {
+
+        yield return new WaitForSeconds(0.1f);
 
         // For each item that is held, check whether the mean is above it,
         // if not, issue a mouseup. (mouseup no matter what if force=true)

@@ -22,7 +22,8 @@ public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         if (held)
         {
-            transform.position = Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 100f);
+            transform.position =
+                Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 100f);
         }
     }
 
