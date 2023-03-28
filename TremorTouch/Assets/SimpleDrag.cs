@@ -10,11 +10,21 @@ public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     GameObject managerMean;
     Vector3 offset = Vector3.zero;
 
+    public bool restrictX = false;
+    public bool restrictY = false;
+
+    float startX;
+    float startY;
+
     // Start is called before the first frame update
     void Start()
     {
         print("Constructing SimpleDrag");
         managerMean = GameObject.Find("Manager").GetComponent<Manager>().mean;
+
+        startX = transform.position.x;
+        startY = transform.position.y;
+
     }
 
     // Update is called once per frame
@@ -23,7 +33,17 @@ public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         if (held)
         {
             transform.position =
-                Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 100f);
+                Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 20f);
+        }
+
+        if (restrictX)
+        {
+            transform.position = new Vector3(startX, transform.position.y, transform.position.z);
+        }
+
+        if (restrictY)
+        {
+            transform.position = new Vector3(transform.position.x, startY, transform.position.z);
         }
     }
 
