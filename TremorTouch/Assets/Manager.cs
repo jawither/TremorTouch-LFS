@@ -188,7 +188,7 @@ public class Manager : MonoBehaviour
                     break;
             }
 
-            StartCoroutine(ReleaseHeldObjects(false));
+            // StartCoroutine(ReleaseHeldObjects(false));
 
         }
 
