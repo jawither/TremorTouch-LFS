@@ -391,28 +391,6 @@ public class Manager : MonoBehaviour
         }
     }
 
-    void HoldValueChanged()
-    {
-        if (holdFunctionality && QuadrantSelectionToggle.isOn == false)
-        {
-            holdFunctionality = false;
-            print(holdFunctionality);
-        }
-        else if (holdFunctionality && QuadrantSelectionToggle.isOn == true) {
-            // HoldFunctionality toggle should not be unchecked if QuadrantSelectionToggle is checked
-            HoldToggle.isOn = true;
-            holdFunctionality = true;
-            print(holdFunctionality);
-        }
-        else if (!holdFunctionality)
-        {
-            holdFunctionality = true;
-            print(holdFunctionality);
-
-        }
-
-    }
-
 
     // UI toggle that sets visibility for sliders on and off.
 
@@ -490,7 +468,7 @@ public class Manager : MonoBehaviour
         void Settings()
     {
         AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
-        HoldToggle.onValueChanged.AddListener(delegate { HoldValueChanged(); });
+
         settingsToggle.onValueChanged.AddListener(delegate { SettingValueChanged(); });
 
         cacheSizeSlider.value = cacheSize;
