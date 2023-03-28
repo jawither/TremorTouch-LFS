@@ -59,8 +59,9 @@ public class Manager : MonoBehaviour
     List<GameObject> cache;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
-    GameObject mean;
+    public GameObject mean;
     Color waiting;
+    HashSet<GameObject> heldObjects;
 
     GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
@@ -68,41 +69,19 @@ public class Manager : MonoBehaviour
     GameObject canvas;
 
 
-    //Function then location variables
-    /*
-        Motivation: having two modes that the user can choose from to increase flexbility
-
-        Location then function:
-        1. user makes a series of taps to choose a location
-        2. user makes another tap (or more) to indicate the function that they are trying to use
-
-        Function then location:
-        1. user makes a tap to indicate the function that they are trying to use
-            -Implementation: There are 4 options (tap, hold, swipe, pinch). Divide the screen into
-                             quadrants and have the user make a tap to choose the mode
-            -Concern: the user may tap a few times to indicate a quadrant. Should there be a buffer period?
-        2. user makes a series of taps to choose a location
-    */
-    bool functionThenLocationFlag = false;
-    enum UserAction
-    {
-        Tap,
-        Swipe,
-        Hold,
-        Pinch
-    }
-    UserAction action = UserAction.Tap;
-    bool selectingQuadrantFlag = true;
 
 
-    // Start: Called before the first frame update by Unity.
-    void Start()
+    // Awake: Called before the first frame update by Unity, and before
+    // other scripts' Start() calls.
+    void Awake()
     {
         Assert.IsTrue(minTaps >= 1);
         alg = Algorithm.Base;
 
         canvas = GameObject.Find("Canvas");
         cache = new List<GameObject>(cacheSize);
+        heldObjects = new HashSet<GameObject>();
+
         waiting = new Color(255f, 0f, 0f, 0.5f);
 
         m_Raycaster = canvas.GetComponent<GraphicRaycaster>();
@@ -126,23 +105,16 @@ public class Manager : MonoBehaviour
         // Receive user input
         if (Input.GetButtonDown("Fire1"))
         {
-            if(functionThenLocationFlag){
-                if(selectingQuadrantFlag){
-                    ReceiveUserTapQuadrant();
-                    selectingQuadrantFlag = false;
-                }
-                else{
-                    ReceiveUserTap();
-                }
-            }
-            else{
-                totalTaps += 1;
-                ReceiveUserTap();
-            }
+            ReceiveUserTap();
         }
 
         // Exit if cache is empty
         if (cache.Count == 0) return;
+
+        if (cache.Count >= cacheSize)
+        {
+            IssueHoldToSystem();
+        }
 
         // Exit if clock hasn't yet expired
         timeSinceLastTap += Time.deltaTime;
@@ -156,85 +128,25 @@ public class Manager : MonoBehaviour
         }
 
         // Issue tap if clock expired and enough taps
-        if (cache.Count <= cacheSize)
+        if (cache.Count < cacheSize)
         {
-            if(functionThenLocationFlag){   //Implementation for function then location [see above]
-                selectingQuadrantFlag = true;
-                switch(action){
-                    case UserAction.Tap:
-                    {
-                        IssueTapToSystem();
-                        break;
-                    }
-                    case UserAction.Hold:
-                    {
-                        IssueHoldToSystem();
-                        break;
-                    }
-                    case UserAction.Swipe:
-                    {
-                        IssueTapToSystem();
-                        break;
-                    }
-                    case UserAction.Pinch:
-                    {
-                        IssueTapToSystem();
-                        break;
-                    }
-                }
-            }
-            else if (holdFunctionality)
-            {                           //Implementation for location then function [see above]
-                SetMeanColor(Color.yellow);
-                if (!toExecuteTap){
-                    timeSinceExecutedTap = timeSinceLastTap;
-                    numTapsOnExecute = totalTaps;
-                    toExecuteTap = true;
-                }
-                else if (timeSinceLastTap - timeSinceExecutedTap >= timeBetweenTapAndHold)
-                {
-                    if (totalTaps > numTapsOnExecute)
-                    {
-                        IssueHoldToSystem();
-                    }
-                    else
-                    {
-                        IssueTapToSystem();
-                    }
-                    toExecuteTap = false;
-                }
-            }
-            else {
-                IssueTapToSystem();
-            }
+            IssueTapToSystem();
             return;
         }
 
+        // Reset if clock expired and enough taps (system was holding)
+        if (cache.Count >= cacheSize)
+        {
+            Reset();
+            StartCoroutine(ReleaseHeldObjects(true));
+            return;
+        }
 
         // We should never get here
         Assert.IsTrue(false);
     }
 
 
-    // ReceiveUserTapQuadrant: if on the function then location mode, this is for the initial tap.
-    // Set the action variable based on the quadrant that the user taps
-    void ReceiveUserTapQuadrant()
-    {
-        Vector3 tapLocation = Input.mousePosition;
-
-        if(tapLocation.x < Screen.width / 2 && tapLocation.y >= Screen.height / 2){       //Quadrant 1 : Tap
-            action = UserAction.Tap;
-        }
-        else if(tapLocation.x >= Screen.width / 2 && tapLocation.y >= Screen.height / 2){  //Quadrant 2 : Hold
-            action = UserAction.Hold;
-        }
-        else if(tapLocation.x < Screen.width / 2 && tapLocation.y < Screen.height / 2){  //Quadrant 3 : Swipe
-            action = UserAction.Swipe;
-        }
-        else if(tapLocation.x >= Screen.width / 2 && tapLocation.y < Screen.height / 2){  //Quadrant 4 : Pinch
-            action = UserAction.Pinch;
-        }
-    }
 
     // ReceiveUserTap: called on frame that user taps the screen.
     // Updates Manager metadata.
@@ -266,8 +178,7 @@ public class Manager : MonoBehaviour
         }
         else
         {
-            if(!toExecuteTap) SetMeanColor(waiting);
-            if(colorTapsOnRecencyFlag) ColorTapsOnRecency();
+            SetMeanColor(waiting);
             switch (alg)
             {
                 case Algorithm.Base:
@@ -277,8 +188,42 @@ public class Manager : MonoBehaviour
                     mean.transform.position = GetWeightedMeanPosition();
                     break;
             }
+
+            // StartCoroutine(ReleaseHeldObjects(false));
+
         }
 
+    }
+
+    IEnumerator ReleaseHeldObjects(bool force)
+    {
+
+        yield return new WaitForSeconds(0.1f);
+
+        // For each item that is held, check whether the mean is above it,
+        // if not, issue a mouseup. (mouseup no matter what if force=true)
+
+        List<RaycastResult> results = GetObjectsAtPosition(mean.transform.position);
+
+        foreach (GameObject obj in heldObjects.ToList())
+        {
+            bool heldItemIsInRaycastResults = false;
+            foreach (RaycastResult r in results)
+            {
+                if (obj == r.gameObject)
+                {
+                    heldItemIsInRaycastResults = true;
+                    break;
+                }
+            }
+
+            if (force || !heldItemIsInRaycastResults)
+            {
+                ExecuteEvents.Execute(obj,
+                    new PointerEventData(EventSystem.current), ExecuteEvents.pointerUpHandler);
+                heldObjects.Remove(obj);
+            }
+        }
     }
 
 
@@ -356,14 +301,7 @@ public class Manager : MonoBehaviour
 
     void IssueTapToSystem()
     {
-
-        AnalyzeInput();
-
-        // Get list of all UI elements at mean's location
-        m_PointerEventData = new PointerEventData(m_EventSystem);
-        m_PointerEventData.position = mean.transform.position;
-        List<RaycastResult> results = new List<RaycastResult>();
-        m_Raycaster.Raycast(m_PointerEventData, results);
+        List<RaycastResult> results = GetObjectsAtPosition(mean.transform.position);
 
         // Issue a click to each of those UI elements
         foreach (RaycastResult result in results)
@@ -377,34 +315,34 @@ public class Manager : MonoBehaviour
         ClearCache();
     }
 
+    List<RaycastResult> GetObjectsAtPosition(Vector3 position)
+    {
+        // Get list of all UI elements at mean's location
+        m_PointerEventData = new PointerEventData(m_EventSystem);
+        m_PointerEventData.position = position;
+        List<RaycastResult> results = new List<RaycastResult>();
+        m_Raycaster.Raycast(m_PointerEventData, results);
+
+        return results;
+    }
+
     void IssueHoldToSystem()
     {
-        // m_PointerEventData = new PointerEventData(m_EventSystem);
-        // m_PointerEventData.position = mean.transform.position;
-        // List<RaycastResult> results = new List<RaycastResult>();
-        // m_Raycaster.Raycast(m_PointerEventData, results);
+        List<RaycastResult> results = GetObjectsAtPosition(mean.transform.position);
 
-        // var pointer = new PointerEventData(EventSystem.current);
+        // Issue a mousedown to each of those UI elements
+        foreach (RaycastResult result in results)
+        {
+            ExecuteEvents.Execute(result.gameObject,
+                new PointerEventData(EventSystem.current), ExecuteEvents.pointerDownHandler);
 
-        // // Issue a click to each of those UI elements
-        // foreach (RaycastResult result in results)
-        // {
 
-        //     ExecuteEvents.Execute(result.gameObject,
-        //         pointer, ExecuteEvents.pointerEnterHandler);
-        //     ExecuteEvents.Execute(result.gameObject,
-        //         pointer, ExecuteEvents.pointerDownHandler);
-
-        //     int sleepValue = (int)holdDuration * 1000;
-        //     print(sleepValue);
-        //     Thread.Sleep(sleepValue);
-        //     ExecuteEvents.Execute(result.gameObject,
-        //         pointer, ExecuteEvents.pointerUpHandler);
-
-        // }
+            // Keep track of what objects we are holding so we can
+            // un-hold them later.
+            heldObjects.Add(result.gameObject);
+        }
 
         SetMeanColor(Color.green);
-        ClearCache();
     }
 
 
@@ -412,6 +350,7 @@ public class Manager : MonoBehaviour
 
     void ClearCache()
     {
+
         foreach (GameObject g in cache)
         {
             GameObject.Destroy(g);
@@ -451,40 +390,6 @@ public class Manager : MonoBehaviour
         else if (alg == Algorithm.Weighted)
         {
             alg = Algorithm.Base;
-        }
-    }
-
-    void HoldValueChanged()
-    {
-        if (holdFunctionality && QuadrantSelectionToggle.isOn == false)
-        {
-            holdFunctionality = false;
-            print(holdFunctionality);
-        }
-        else if (holdFunctionality && QuadrantSelectionToggle.isOn == true) {
-            // HoldFunctionality toggle should not be unchecked if QuadrantSelectionToggle is checked
-            HoldToggle.isOn = true;
-            holdFunctionality = true;
-            print(holdFunctionality);
-        }
-        else if (!holdFunctionality)
-        {
-            holdFunctionality = true;
-            print(holdFunctionality);
-
-        }
-
-    }
-
-    void QuadrantValueChanged() {
-        if (functionThenLocationFlag) {
-            functionThenLocationFlag = false;
-        }
-        else if (!functionThenLocationFlag) {
-            // if we set quadrantSelectionToggle to true, holding functionality should also be true
-            functionThenLocationFlag = true;
-            HoldToggle.isOn = true;
-            print(holdFunctionality);
         }
     }
 
@@ -565,8 +470,7 @@ public class Manager : MonoBehaviour
         void Settings()
     {
         AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
-        HoldToggle.onValueChanged.AddListener(delegate { HoldValueChanged(); });
-        QuadrantSelectionToggle.onValueChanged.AddListener(delegate {QuadrantValueChanged(); });
+
         settingsToggle.onValueChanged.AddListener(delegate { SettingValueChanged(); });
 
         cacheSizeSlider.value = cacheSize;
