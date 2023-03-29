@@ -51,6 +51,7 @@ public class Manager : MonoBehaviour
     bool weightedModeFlag = true;
 
     // Manager vars
+    public bool firstUse = true;
     float timeSinceLastTap = 0f;
     int totalTaps = 0;
     int numTapsOnExecute = 0;
@@ -102,6 +103,12 @@ public class Manager : MonoBehaviour
     // Update: Called once per frame by Unity.
     void Update()
     {
+
+        if (firstUse)
+        {
+            return;
+        }
+
         // Receive user input
         if (Input.GetButtonDown("Fire1"))
         {
