@@ -26,7 +26,7 @@ public class SimpleScroll : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
         {
             GetComponent<ScrollRect>().verticalNormalizedPosition = Mathf.Lerp(
                 GetComponent<ScrollRect>().verticalNormalizedPosition, offset +
-                (startMeanPos.y - managerMean.transform.position.y) /1000, Time.deltaTime * 30);
+                (startMeanPos.y - managerMean.transform.position.y) /1000, Time.deltaTime * 8);
         }
     }
 
