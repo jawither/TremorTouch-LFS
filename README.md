@@ -20,7 +20,7 @@ If you'd like run the app yourself from the source code, it will require several
 
 7. In the upper right corner of the lower tab, select the drop down that says "Play Focus" and change it to "Play Maximized". You can now click the triangle play button at the top of the window to launch the app on a simulated device.
 
-### (Option 1:) Run on mobile device with provided pre-built `.xcodeproj`
+### (Option 2:) Run on mobile device with provided pre-built `.xcodeproj`
 If you'd like to avoid the steps in Option 2, you can run our pre-made build on your iOS device. This requires you are using macOS and have XCode installed.
 
 1. Download the `Build` sub-directory of the repository.
