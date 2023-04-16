@@ -27,15 +27,11 @@ public class Manager : MonoBehaviour
     // Settings variables to change from within app
     public Algorithm alg;
 
-    public Toggle AlgorithmToggle;
-    public Toggle HoldToggle;
-    public Toggle QuadrantSelectionToggle;
-    public Toggle settingsToggle;
-    public Slider cacheSizeSlider;
-    public Slider minTapsSlider;
-    public Slider maxTimeBetweenTapsSlider;
-    public Slider timeBetweenTapAndHoldSlider;
-    public Slider holdDurationSlider;
+    public SimpleSlider cacheSizeSlider;
+    public SimpleSlider minTapsSlider;
+    public SimpleSlider maxTimeBetweenTapsSlider;
+    public SimpleToggle algToggle;
+
     bool visible = false;
     bool holdFunctionality = false;
 
@@ -69,6 +65,8 @@ public class Manager : MonoBehaviour
     PointerEventData m_PointerEventData;
     EventSystem m_EventSystem;
     GameObject canvas;
+    public CanvasGroup settingsCanvas;
+    public SimpleToggle settingsToggle;
 
 
 
@@ -88,6 +86,7 @@ public class Manager : MonoBehaviour
 
         m_Raycaster = canvas.GetComponent<GraphicRaycaster>();
         m_EventSystem = canvas.GetComponent<EventSystem>();
+        
 
         mean = GameObject.Instantiate(meanPrefab, transform.position,
             Quaternion.identity, canvas.transform);
@@ -95,9 +94,8 @@ public class Manager : MonoBehaviour
         mean.GetComponent<Canvas>().overrideSorting = true;
         mean.GetComponent<Canvas>().sortingOrder = 5;
 
-        Settings();
-
         Reset();
+        
     }
 
 
@@ -109,6 +107,7 @@ public class Manager : MonoBehaviour
         {
             return;
         }
+        UpdateSettings();
 
         // Receive user input
         if (Input.GetButtonDown("Fire1"))
@@ -161,6 +160,9 @@ public class Manager : MonoBehaviour
 
     void ReceiveUserTap()
     {
+
+        print("got tap");
+
         if(toExecuteTap) return;
 
         // Reset clock
@@ -404,35 +406,12 @@ public class Manager : MonoBehaviour
 
     // UI toggle that sets visibility for sliders on and off.
 
-    void SettingValueChanged()
-    {
-        if (visible == false)
-        {
-            cacheSizeSlider.gameObject.SetActive(true);
-            minTapsSlider.gameObject.SetActive(true);
-            maxTimeBetweenTapsSlider.gameObject.SetActive(true);
-            timeBetweenTapAndHoldSlider.gameObject.SetActive(true);
-            holdDurationSlider.gameObject.SetActive(true);
-            visible = true;
-        }
-        else
-        {
-            cacheSizeSlider.gameObject.SetActive(false);
-            minTapsSlider.gameObject.SetActive(false);
-            maxTimeBetweenTapsSlider.gameObject.SetActive(false);
-            timeBetweenTapAndHoldSlider.gameObject.SetActive(false);
-            holdDurationSlider.gameObject.SetActive(false);
-            visible = false;
-        }
-
-    }
 
     // UI slider for changing cache size (range from 2-8)
 
     void UpdateCacheSize()
     {
-        cacheSize = Mathf.RoundToInt(cacheSizeSlider.value * 8);
-        print(cacheSize);
+        cacheSize = (int)cacheSizeSlider.value;
     }
 
 
@@ -440,8 +419,7 @@ public class Manager : MonoBehaviour
 
     void UpdateMinTaps()
     {
-        minTaps = Mathf.CeilToInt(minTapsSlider.value * 3);
-        print(minTaps);
+        minTaps = (int)minTapsSlider.value;
     }
 
 
@@ -450,61 +428,30 @@ public class Manager : MonoBehaviour
 
     void UpdateMaxTimeBetweenTaps()
     {
-        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value * 2f;
-        print(maxTimeBetweenTaps);
+        maxTimeBetweenTaps = maxTimeBetweenTapsSlider.value;
     }
 
-
-    // UI slider for changing time between tap and hold (range from 1-5)
-    // basically how much time a user has to respond to the yellow circle and make it a hold
-    // going to disable changing mean location once circle turns yellow
-    void UpdateTimeBetweenTapAndHold()
+    void UpdateSettings()
     {
-        timeBetweenTapAndHold = timeBetweenTapAndHoldSlider.value * 5f;
-        print(timeBetweenTapAndHold);
-    }
+        UpdateCacheSize();
+        UpdateMinTaps();
+        UpdateMaxTimeBetweenTaps();
 
-
-    // UI slider for how long a hold should be performed for (range from 1-4)
-    // basically duration of screen contact
-    void UpdateHoldDuration()
-    {
-        holdDuration = holdDurationSlider.value * 4f;
-        print(holdDuration);
-
-    }
-
-
-    void Settings()
-    {
-        AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
-
-        settingsToggle.onValueChanged.AddListener(delegate { SettingValueChanged(); });
-
-        cacheSizeSlider.value = cacheSize;
-        cacheSizeSlider.minValue = 0.2f;
-        cacheSizeSlider.onValueChanged.AddListener(delegate { UpdateCacheSize(); });
-        cacheSizeSlider.gameObject.SetActive(false);
-
-        minTapsSlider.value = minTaps;
-        minTapsSlider.minValue = 0.3f;
-        minTapsSlider.onValueChanged.AddListener(delegate { UpdateMinTaps(); });
-        minTapsSlider.gameObject.SetActive(false);
-
-        maxTimeBetweenTapsSlider.value = maxTimeBetweenTaps;
-        maxTimeBetweenTapsSlider.minValue = 0.25f;
-        maxTimeBetweenTapsSlider.onValueChanged.AddListener(delegate { UpdateMaxTimeBetweenTaps(); });
-        maxTimeBetweenTapsSlider.gameObject.SetActive(false);
-
-        timeBetweenTapAndHoldSlider.value = timeBetweenTapAndHold;
-        timeBetweenTapAndHoldSlider.minValue = 0.2f;
-        timeBetweenTapAndHoldSlider.onValueChanged.AddListener(delegate { UpdateTimeBetweenTapAndHold(); });
-        timeBetweenTapAndHoldSlider.gameObject.SetActive(false);
-
-        holdDurationSlider.value = holdDuration;
-        holdDurationSlider.minValue = 0.25f;
-        holdDurationSlider.onValueChanged.AddListener(delegate { UpdateHoldDuration(); });
-        holdDurationSlider.gameObject.SetActive(false);
+        if(algToggle.value) { alg = Algorithm.Weighted; }
+        else { alg = Algorithm.Base; }
+        
+        if(settingsToggle.value)
+        {
+            settingsCanvas.interactable = true;
+            settingsCanvas.blocksRaycasts = true;
+            settingsCanvas.alpha = 1f;
+        }
+        else
+        {
+            settingsCanvas.interactable = false;
+            settingsCanvas.blocksRaycasts = false;
+            settingsCanvas.alpha = 0f;
+        }
     }
 
     InputType AnalyzeInput()

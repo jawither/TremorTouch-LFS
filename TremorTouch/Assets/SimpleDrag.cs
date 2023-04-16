@@ -35,16 +35,6 @@ public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             transform.position =
                 Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 20f);
         }
-
-        if (restrictX)
-        {
-            transform.position = new Vector3(startX, transform.position.y, transform.position.z);
-        }
-
-        if (restrictY)
-        {
-            transform.position = new Vector3(transform.position.x, startY, transform.position.z);
-        }
     }
 
     public void OnPointerDown(PointerEventData pointerEventData)
