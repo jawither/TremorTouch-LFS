@@ -11,7 +11,7 @@ public class Manager : MonoBehaviour
 {
 
     //Types of algorithm
-    enum Algorithm
+    public enum Algorithm
     {
         Base,
         Weighted
@@ -25,7 +25,7 @@ public class Manager : MonoBehaviour
     }
 
     // Settings variables to change from within app
-    Algorithm alg;
+    public Algorithm alg;
 
     public Toggle AlgorithmToggle;
     public Toggle HoldToggle;
@@ -52,6 +52,7 @@ public class Manager : MonoBehaviour
 
     // Manager vars
     public bool firstUse = true;
+    public bool calibrating = false;
     float timeSinceLastTap = 0f;
     int totalTaps = 0;
     int numTapsOnExecute = 0;
@@ -104,7 +105,7 @@ public class Manager : MonoBehaviour
     void Update()
     {
 
-        if (firstUse)
+        if (firstUse || calibrating)
         {
             return;
         }
@@ -474,7 +475,7 @@ public class Manager : MonoBehaviour
     }
 
 
-        void Settings()
+    void Settings()
     {
         AlgorithmToggle.onValueChanged.AddListener(delegate { AlgorithmValueChanged(); });
 
