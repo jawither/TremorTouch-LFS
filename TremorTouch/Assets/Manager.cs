@@ -11,7 +11,7 @@ public class Manager : MonoBehaviour
 {
 
     //Types of algorithm
-    enum Algorithm
+    public enum Algorithm
     {
         Base,
         Weighted
@@ -25,7 +25,7 @@ public class Manager : MonoBehaviour
     }
 
     // Settings variables to change from within app
-    Algorithm alg;
+    public Algorithm alg;
 
     public SimpleSlider cacheSizeSlider;
     public SimpleSlider minTapsSlider;
@@ -48,6 +48,7 @@ public class Manager : MonoBehaviour
 
     // Manager vars
     public bool firstUse = true;
+    public bool calibrating = false;
     float timeSinceLastTap = 0f;
     int totalTaps = 0;
     int numTapsOnExecute = 0;
@@ -102,6 +103,10 @@ public class Manager : MonoBehaviour
     void Update()
     {
 
+        if (firstUse || calibrating)
+        {
+            return;
+        }
         UpdateSettings();
 
         // Receive user input
@@ -448,7 +453,6 @@ public class Manager : MonoBehaviour
             settingsCanvas.alpha = 0f;
         }
     }
-
 
     InputType AnalyzeInput()
     {
