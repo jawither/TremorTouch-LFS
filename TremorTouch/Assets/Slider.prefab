@@ -351,7 +351,7 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 0.47450984, g: 0.55641395, b: 1, a: 1}
+    m_NormalColor: {r: 0.9622642, g: 0.9304913, b: 0.9336901, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_PressedColor: {r: 0.2783019, g: 0.39140412, b: 1, a: 1}
     m_SelectedColor: {r: 0.47450984, g: 0.5568628, b: 1, a: 1}
@@ -420,6 +420,9 @@ MonoBehaviour:
   restrictX: 0
   restrictY: 1
   value: 0
+  minValue: 0
+  maxValue: 0
+  useInt: 0
 --- !u!1 &2329861717259285550
 GameObject:
   m_ObjectHideFlags: 0

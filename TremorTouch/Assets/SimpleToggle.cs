@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 
-public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class SimpleToggle : MonoBehaviour
 {
-    bool held = false;
     GameObject managerMean;
     Vector3 offset = Vector3.zero;
 
@@ -16,37 +16,46 @@ public class SimpleDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     float startX;
     float startY;
 
+    public bool value = false;
+
+    public Color offColor;
+    public Color onColor;
+
     // Start is called before the first frame update
     void Start()
     {
-        print("Constructing SimpleDrag");
         managerMean = GameObject.Find("Manager").GetComponent<Manager>().mean;
 
         startX = transform.position.x;
         startY = transform.position.y;
+
+        Set(false);
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (held)
-        {
-            transform.position =
-                Vector3.Lerp(transform.position, managerMean.transform.position + offset, Time.deltaTime * 20f);
-        }
+        
     }
 
-    public void OnPointerDown(PointerEventData pointerEventData)
+    void Set(bool val)
     {
-        if (held) return;
+        print("Setting to " + val);
+        value = val;
 
-        held = true;
-        offset = transform.position - managerMean.transform.position;
+        Color dest = offColor;
+        if(val) { dest = onColor; }
+
+        var colors = GetComponent<Button>().colors;
+        colors.normalColor = dest;
+        GetComponent<Button>().colors = colors;
     }
 
-    public void OnPointerUp(PointerEventData pointerEventData)
+    public void Toggle(int x)
     {
-        held = false;
+        if(value) { Set(false); }
+        else { Set(true); }
     }
+
 }

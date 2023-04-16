@@ -19,9 +19,9 @@ public class SimpleSlider : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
     float startY;
 
     public float value;
-    public static float minValue;
-    public static float maxValue;
-    public static float divisor;
+    public float minValue;
+    public float maxValue;
+    public bool useInt = false;
 
     static float physicalRange;
     TextMeshProUGUI valueText;
@@ -59,7 +59,10 @@ public class SimpleSlider : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
             transform.localPosition = new Vector3(transform.localPosition.x, startY, transform.localPosition.z);
         }
 
-        value = (transform.localPosition.x + (physicalRange / 2)) / physicalRange;
+        float valLerp = (transform.localPosition.x + (physicalRange / 2)) / physicalRange;
+        value = Mathf.Lerp(minValue, maxValue, valLerp);
+        if (useInt)
+            value = Mathf.Floor(value);
         valueText.text =(Mathf.Round(value * 10.0f) * 0.1f).ToString();
     }
 
