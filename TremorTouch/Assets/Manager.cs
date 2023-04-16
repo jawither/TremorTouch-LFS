@@ -94,7 +94,7 @@ public class Manager : MonoBehaviour
         mean.GetComponent<Canvas>().overrideSorting = true;
         mean.GetComponent<Canvas>().sortingOrder = 5;
 
-        Settings();
+        //Settings();
 
         Reset();
     }
@@ -103,11 +103,6 @@ public class Manager : MonoBehaviour
     // Update: Called once per frame by Unity.
     void Update()
     {
-
-        if (firstUse)
-        {
-            return;
-        }
 
         // Receive user input
         if (Input.GetButtonDown("Fire1"))
@@ -160,6 +155,9 @@ public class Manager : MonoBehaviour
 
     void ReceiveUserTap()
     {
+
+        print("got tap");
+
         if(toExecuteTap) return;
 
         // Reset clock
