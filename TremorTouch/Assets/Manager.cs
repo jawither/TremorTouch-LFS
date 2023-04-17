@@ -437,8 +437,8 @@ public class Manager : MonoBehaviour
         UpdateMinTaps();
         UpdateMaxTimeBetweenTaps();
 
-        if(algToggle.value) { alg = Algorithm.Weighted; }
-        else { alg = Algorithm.Base; }
+        //if(algToggle.value) { alg = Algorithm.Weighted; }
+        //else { alg = Algorithm.Base; }
         
         if(settingsToggle.value)
         {
