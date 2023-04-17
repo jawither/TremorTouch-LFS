@@ -60,6 +60,7 @@ public class Manager : MonoBehaviour
     public GameObject mean;
     Color waiting;
     HashSet<GameObject> heldObjects;
+    bool makingMeanClear = false;
 
     GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
@@ -161,7 +162,7 @@ public class Manager : MonoBehaviour
     void ReceiveUserTap()
     {
 
-        print("got tap");
+        makingMeanClear = false;
 
         if(toExecuteTap) return;
 
@@ -198,8 +199,6 @@ public class Manager : MonoBehaviour
                     mean.transform.position = GetWeightedMeanPosition();
                     break;
             }
-
-            // StartCoroutine(ReleaseHeldObjects(false));
 
         }
 
@@ -323,6 +322,7 @@ public class Manager : MonoBehaviour
         // Make mean red and empty cache
         SetMeanColor(Color.red);
         ClearCache();
+        StartCoroutine(MakeMeanClearAfterDuration());
     }
 
     List<RaycastResult> GetObjectsAtPosition(Vector3 position)
@@ -503,5 +503,21 @@ public class Manager : MonoBehaviour
             print("TAP");
             return InputType.Tap;
         }
+    }
+
+    IEnumerator MakeMeanClearAfterDuration()
+    {
+        makingMeanClear = true;
+        float time = 0.75f;
+        for (float elapsed = 0; elapsed < time; elapsed += Time.deltaTime)
+        {
+            yield return null;
+        }
+
+        if (makingMeanClear)
+        {
+            SetMeanColor(Color.clear);
+        }
+        makingMeanClear = false;
     }
 }
