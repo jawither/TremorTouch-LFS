@@ -24,6 +24,7 @@ public class SimpleToggle : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         managerMean = GameObject.Find("Manager").GetComponent<Manager>().mean;
 
         startX = transform.position.x;

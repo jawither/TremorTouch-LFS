@@ -20,7 +20,7 @@ public class CalibrateWelcome : MonoBehaviour
     void Start()
     {
         panelRectTransform = GetComponent<RectTransform>();
-        panelRectTransform.anchoredPosition = new Vector2(0, 0);
+        panelRectTransform.anchoredPosition = new Vector2(353, 75);
 
         Button btn = yourButton.GetComponent<Button>();
         btn.onClick.AddListener(ButtonOnClick);
