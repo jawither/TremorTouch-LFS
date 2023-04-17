@@ -50,16 +50,14 @@ public class Manager : MonoBehaviour
     public bool firstUse = true;
     public bool calibrating = false;
     float timeSinceLastTap = 0f;
-    int totalTaps = 0;
-    int numTapsOnExecute = 0;
-    float timeSinceExecutedTap = 0f;
-    bool toExecuteTap = false;
+
     List<GameObject> cache;
     public GameObject locationPrefab;
     public GameObject meanPrefab;
     public GameObject mean;
     Color waiting;
     HashSet<GameObject> heldObjects;
+    bool makingMeanClear = false;
 
     GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
@@ -105,8 +103,9 @@ public class Manager : MonoBehaviour
 
         if (firstUse || calibrating)
         {
-            return;
+            //return;
         }
+
         UpdateSettings();
 
         // Receive user input
@@ -161,9 +160,7 @@ public class Manager : MonoBehaviour
     void ReceiveUserTap()
     {
 
-        print("got tap");
-
-        if(toExecuteTap) return;
+        makingMeanClear = false;
 
         // Reset clock
         timeSinceLastTap = 0f;
@@ -198,8 +195,6 @@ public class Manager : MonoBehaviour
                     mean.transform.position = GetWeightedMeanPosition();
                     break;
             }
-
-            // StartCoroutine(ReleaseHeldObjects(false));
 
         }
 
@@ -322,6 +317,7 @@ public class Manager : MonoBehaviour
 
         // Make mean red and empty cache
         SetMeanColor(Color.red);
+        StartCoroutine(MakeMeanClearAfterDuration());
         ClearCache();
     }
 
@@ -503,5 +499,21 @@ public class Manager : MonoBehaviour
             print("TAP");
             return InputType.Tap;
         }
+    }
+
+    IEnumerator MakeMeanClearAfterDuration()
+    {
+        makingMeanClear = true;
+        float time = 0.75f;
+        for (float elapsed = 0; elapsed < time; elapsed += Time.deltaTime)
+        {
+            yield return null;
+        }
+
+        if (makingMeanClear)
+        {
+            SetMeanColor(Color.clear);
+        }
+        makingMeanClear = false;
     }
 }

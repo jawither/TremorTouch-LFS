@@ -25,7 +25,7 @@ public class CalibrateWelcome : MonoBehaviour
         Button btn = yourButton.GetComponent<Button>();
         btn.onClick.AddListener(ButtonOnClick);
 
-        self.SetActive(false);
+        self.SetActive(true);
     }
 
     // Update is called once per frame
